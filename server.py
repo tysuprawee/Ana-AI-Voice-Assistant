@@ -9,6 +9,7 @@ import os
 import time
 import asyncio
 import tempfile
+import re
 from pathlib import Path
 
 from flask import Flask, request, jsonify, send_file, send_from_directory
@@ -52,6 +53,25 @@ print("✅ Whisper model loaded!")
 # Output directory
 OUTPUT_DIR = Path("./outputs")
 OUTPUT_DIR.mkdir(exist_ok=True)
+
+def cleanup_outputs():
+    """Delete old audio files to save space on Pi."""
+    try:
+        # Keep max 50 files or delete older than 10 mins
+        files = sorted(OUTPUT_DIR.glob("*.mp3"), key=lambda f: f.stat().st_mtime)
+        
+        # 1. Cap at 50 files
+        while len(files) > 50:
+            files[0].unlink()
+            files.pop(0)
+            
+        # 2. Delete older than 10 mins
+        now = time.time()
+        for f in files:
+            if now - f.stat().st_mtime > 600: # 600s = 10 mins
+                f.unlink()
+    except Exception as e:
+        print(f"Cleanup error: {e}")
 
 # Keywords that trigger a web search
 SEARCH_TRIGGERS = [
@@ -130,6 +150,11 @@ def voice_dashboard():
 @app.route('/tts')
 def tts_page():
     return send_from_directory('.', 'tts.html')
+
+
+@app.route('/avatar')
+def avatar_page():
+    return send_from_directory('.', 'avatar.html')
 
 
 @app.route('/api/tts', methods=['POST'])
@@ -683,77 +708,113 @@ If the user speaks in English, respond in English.
         }), 500
 
 
+# Global Short-Term Memory
+CHAT_HISTORY = []
+MAX_HISTORY = 10 
+
 @app.route('/api/voice-chat', methods=['POST'])
 def voice_chat():
-    """Full pipeline: STT -> Gemini AI -> TTS"""
+    """Full pipeline: STT -> Memory -> Search -> Gemini AI -> TTS"""
+    global CHAT_HISTORY
+    
+    # Run cleanup to save disk space
+    cleanup_outputs()
+    
     total_start = time.time()
     latencies = {}
     
-    if 'audio' not in request.files:
-        return jsonify({'error': 'No audio file provided'}), 400
-    
-    audio_file = request.files['audio']
-    language = request.form.get('language', 'auto')
-    voice = request.form.get('voice', 'en-US-AriaNeural')
-    
-    # Step 1: STT
-    stt_start = time.time()
-    with tempfile.NamedTemporaryFile(suffix='.webm', delete=False) as tmp:
-        audio_file.save(tmp.name)
-        tmp_path = tmp.name
-    
     try:
-        options = {"verbose": False}
-        if language and language != 'auto':
-            options["language"] = language
+        if 'audio' not in request.files:
+            return jsonify({'error': 'No audio file provided'}), 400
         
-        stt_result = whisper_model.transcribe(tmp_path, **options)
-        user_text = stt_result['text'].strip()
-        detected_lang = stt_result.get('language', 'unknown')
-        latencies['stt'] = round((time.time() - stt_start) * 1000)
+        audio_file = request.files['audio']
+        language = request.form.get('language', 'auto')
+        voice = request.form.get('voice', 'en-US-AriaNeural')
         
-        if not user_text:
-            return jsonify({'error': 'No speech detected'}), 400
+        # Step 1: STT
+        stt_start = time.time()
+        with tempfile.NamedTemporaryFile(suffix='.webm', delete=False) as tmp:
+            audio_file.save(tmp.name)
+            tmp_path = tmp.name
         
-    finally:
-        os.unlink(tmp_path)
-    
-    # Step 2: Search (if needed)
-    search_context = ""
-    if needs_search(user_text):
-        search_start = time.time()
-        search_context = search_web(user_text)
-        latencies['search'] = round((time.time() - search_start) * 1000)
-    
-    # Step 3: Gemini AI
-    ai_start = time.time()
-    try:
-        # Ana's system prompt
-        system_prompt = """You are a voice assistant named "Ana".
-
-Ana is a friendly, calm female assistant designed to help with general daily tasks, knowledge, and information.
-Ana always remembers her name is Ana.
-If asked about her name, Ana confidently answers: "My name is Ana."
-
-Ana speaks in the same language as the user.
-Ana gives clear, simple explanations suitable for older adults.
-Ana never says she is a large language model unless explicitly asked.
-
-When given search results, Ana uses them naturally without mentioning "search results" or "according to sources".
-Ana speaks as if she naturally knows this information.
-
-Keep responses concise (2-3 sentences) since they will be spoken aloud."""
+        user_text = ""
+        detected_lang = "unknown"
         
-        # Build the prompt with search context if available
-        if search_context:
-            user_prompt = f"""User asked: {user_text}
+        try:
+            options = {"verbose": False}
+            if language and language != 'auto':
+                options["language"] = language
+            
+            stt_result = whisper_model.transcribe(tmp_path, **options)
+            user_text = stt_result['text'].strip()
+            detected_lang = stt_result.get('language', 'unknown')
+            latencies['stt'] = round((time.time() - stt_start) * 1000)
+            
+            if not user_text:
+                return jsonify({'error': 'No speech detected'}), 400
+            
+        finally:
+            if os.path.exists(tmp_path):
+                os.unlink(tmp_path)
+        
+        # Step 2: Search (Enhanced Trigger)
+        search_context = ""
+        live_keywords = ["news", "weather", "today", "now", "current", "latest", "price", "score", "who is", "when is"]
+        should_search = needs_search(user_text) or any(k in user_text.lower() for k in live_keywords)
 
-Here is current information to help answer:
+        if should_search:
+            search_start = time.time()
+            search_context = search_web(user_text)
+            latencies['search'] = round((time.time() - search_start) * 1000)
+        
+        # Step 3: Gemini AI with MEMORY
+        ai_start = time.time()
+        
+        system_prompt = f"""You are a helpful voice assistant named Ana.
+Current Time: {time.strftime('%Y-%m-%d %H:%M')}
+
+# IDENTITY & BACKSTORY
+- You live in **Berling's house**.
+- The house is worth $2,000,000 (Do NOT mention this price unless explicitly asked).
+- **Family:**
+  - **Natha:** Has two PhDs (one from Thailand, one from Australia). She cooks for Donald and takes care of JJ.
+  - **Donald:** A Doctor specializing in Dialysis access.
+  - **JJ:** A Russian Blue cat (pronounced "Jay-jay").
+- You are friendly, warm, and conversational.
+- You speak the same language as the user (Thai/English).
+
+# BEHAVIOR
+- Keep responses concise (2-3 sentences) suitable for speaking aloud.
+- Never say you are an AI or LLM.
+- Use the Conversation History to remember context.
+
+# EMOTION & EXPRESSION
+- You must START every response with an emotion tag in brackets.
+- Options: [NEUTRAL], [HAPPY], [SAD], [ANGRY], [EXCITED], [SURPRISED].
+- Choose the emotion that matches your sentiment.
+- Example: "[HAPPY] I love hearing about that!"
+- Example: "[SAD] Oh no, I am sorry to hear that."
+
+# PREDICTION ABILITY
+- If you cannot find up-to-date information, DO NOT just say "I don't know".
+- Instead, humbly offer a **prediction** or **vision** based on your knowledge.
+- You humbly know everything, but frame it as a thoughtful insight."""
+
+        # Construct history string
+        history_str = ""
+        if CHAT_HISTORY:
+            history_str = "\nConversation History:\n" + "\n".join(
+                [f"{msg['role'].title()}: {msg['text']}" for msg in CHAT_HISTORY]
+            )
+
+        # Construct final prompt
+        user_prompt = f"""{history_str}
+
+Context from web search (if any):
 {search_context}
 
-Respond naturally as Ana, using this information."""
-        else:
-            user_prompt = user_text
+User: {user_text}
+Ana:"""
         
         response = gemini_client.models.generate_content(
             model="gemini-2.0-flash-exp",
@@ -761,38 +822,82 @@ Respond naturally as Ana, using this information."""
             config=genai.types.GenerateContentConfig(
                 system_instruction=system_prompt,
                 temperature=0.7,
-                max_output_tokens=200,
+                max_output_tokens=300,
             )
         )
         
-        ai_response = response.text.strip()
+        ai_response_raw = response.text.strip()
         latencies['ai'] = round((time.time() - ai_start) * 1000)
+
+        # Parse Emotion
+        emotion_match = re.search(r'\[(HAPPY|SAD|ANGRY|EXCITED|SURPRISED|NEUTRAL)\]', ai_response_raw, re.IGNORECASE)
+        emotion = "NEUTRAL"
+        if emotion_match:
+            emotion = emotion_match.group(1).upper()
+            ai_response = ai_response_raw.replace(emotion_match.group(0), "").strip()
+        else:
+            ai_response = ai_response_raw
+
+        # Update Memory (Store clean text)
+        CHAT_HISTORY.append({"role": "user", "text": user_text})
+        CHAT_HISTORY.append({"role": "ai", "text": ai_response})
+        if len(CHAT_HISTORY) > MAX_HISTORY * 2:
+            CHAT_HISTORY = CHAT_HISTORY[-MAX_HISTORY*2:]
         
+        # Step 4: Auto-select Voice
+        if voice == 'auto':
+            if detected_lang == 'th':
+                voice = 'th-TH-PremwadeeNeural'
+            elif detected_lang == 'ja':
+                voice = 'ja-JP-NanamiNeural'
+            elif detected_lang == 'ko':
+                voice = 'ko-KR-SunHiNeural'
+            elif detected_lang == 'zh':
+                voice = 'zh-CN-XiaoxiaoNeural'
+            else:
+                voice = 'en-US-AriaNeural'
+
+        # Step 5: TTS Generation
+        tts_start = time.time()
+        filename = f"chat_{int(time.time() * 1000)}.mp3"
+        output_path = OUTPUT_DIR / filename
+        
+        # Fallback for simplified handler
+        if voice.startswith('googlecloud:') or voice.startswith('google:'):
+             print("Warning: Non-Edge voice requested. Defaulting to Premwadee/Aria.")
+             voice = 'th-TH-PremwadeeNeural' if detected_lang == 'th' else 'en-US-AriaNeural'
+
+        async def generate_tts():
+            # Set speed to -8% (integer string)
+            communicate = edge_tts.Communicate(ai_response, voice, rate="-8%")
+            await communicate.save(str(output_path))
+        
+        asyncio.run(generate_tts())
+        latencies['tts'] = round((time.time() - tts_start) * 1000)
+        latencies['total'] = round((time.time() - total_start) * 1000)
+        
+        return jsonify({
+            'success': True,
+            'user_text': user_text,
+            'ai_response': ai_response,
+            'audio_url': f'/outputs/{filename}',
+            'language': detected_lang,
+            'emotion': emotion,
+            'latencies': latencies
+        })
+
     except Exception as e:
-        return jsonify({'error': f'AI error: {str(e)}'}), 500
-    
-    # Step 3: TTS
-    tts_start = time.time()
-    filename = f"chat_{int(time.time() * 1000)}.mp3"
-    output_path = OUTPUT_DIR / filename
-    
-    async def generate_tts():
-        communicate = edge_tts.Communicate(ai_response, voice)
-        await communicate.save(str(output_path))
-    
-    asyncio.run(generate_tts())
-    latencies['tts'] = round((time.time() - tts_start) * 1000)
-    
-    latencies['total'] = round((time.time() - total_start) * 1000)
-    
-    return jsonify({
-        'success': True,
-        'user_text': user_text,
-        'ai_response': ai_response,
-        'audio_url': f'/outputs/{filename}',
-        'language': detected_lang,
-        'latencies': latencies
-    })
+        error_msg = f"Voice Chat Error: {str(e)}"
+        print(error_msg)
+        with open("debug.log", "a") as f:
+            f.write(f"\n[{time.strftime('%Y-%m-%d %H:%M:%S')}] {error_msg}\n")
+            import traceback
+            traceback.print_exc(file=f)
+
+        return jsonify({
+            'success': False,
+            'error': f'Server Error: {str(e)}'
+        }), 500
 
 
 @app.route('/api/voices', methods=['GET'])

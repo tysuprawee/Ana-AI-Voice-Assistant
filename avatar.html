@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Avatar - Ana</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #1a1a2e;
+            color: white;
+            font-family: 'Fredoka', sans-serif;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            user-select: none;
+        }
+
+        /* --- LAYOUT --- */
+        .avatar-scene {
+            position: relative;
+            width: 400px;
+            height: 550px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+        }
+
+        /* --- ANIMATIONS --- */
+        @keyframes breathe {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-3px);
+            }
+        }
+
+        @keyframes sway {
+
+            0%,
+            100% {
+                transform: rotate(-1deg);
+            }
+
+            50% {
+                transform: rotate(1deg);
+            }
+        }
+
+        .body-group {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 100%;
+            animation: breathe 4s ease-in-out infinite;
+        }
+
+        .head-group {
+            position: absolute;
+            bottom: 140px;
+            left: 50%;
+            width: 300px;
+            height: 340px;
+            margin-left: -150px;
+            animation: sway 6s ease-in-out infinite, breathe 4s ease-in-out infinite reverse;
+            transform-origin: center bottom;
+            z-index: 20;
+        }
+
+        /* --- BODY PARTS --- */
+        .shoulders {
+            position: absolute;
+            bottom: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 360px;
+            height: 180px;
+            background: #818cf8;
+            border-radius: 50% 50% 0 0;
+            z-index: 5;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.4);
+        }
+
+        .neck {
+            position: absolute;
+            bottom: 130px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 90px;
+            height: 80px;
+            background: #eebb99;
+            z-index: 6;
+            border-radius: 0 0 20px 20px;
+        }
+
+        .collar {
+            position: absolute;
+            bottom: 130px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 140px;
+            height: 40px;
+            background: white;
+            border-radius: 20px;
+            z-index: 7;
+        }
+
+        /* NAME TAG (Moved Lower & Visible) */
+        .name-tag {
+            position: absolute;
+            bottom: 60px;
+            /* Lower on chest */
+            right: 70px;
+            /* Right side */
+            width: 70px;
+            height: 28px;
+            background: linear-gradient(135deg, #fcd34d 0%, #fbbf24 100%);
+            border-radius: 6px;
+            color: #78350f;
+            font-size: 14px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            z-index: 25;
+            /* Highly visible */
+        }
+
+        .name-tag::after {
+            /* Pin */
+            content: '';
+            position: absolute;
+            top: -5px;
+            width: 30px;
+            height: 2px;
+            background: #cbd5e1;
+        }
+
+        /* --- HEAD --- */
+        .hair-back {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 300px;
+            height: 340px;
+            background: #2d1b1b;
+            border-radius: 140px 140px 60px 60px;
+            z-index: 15;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .face {
+            position: absolute;
+            top: 60px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 230px;
+            height: 250px;
+            background: #ffdab9;
+            border-radius: 110px 110px 100px 100px;
+            z-index: 20;
+        }
+
+        .hair-bangs {
+            position: absolute;
+            top: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 270px;
+            height: 110px;
+            background: #2d1b1b;
+            border-radius: 60px 60px 40px 40px;
+            z-index: 25;
+            clip-path: ellipse(100% 85% at 50% 15%);
+        }
+
+        /* FEATURES */
+        .feature-container {
+            position: absolute;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 30;
+        }
+
+        .eyebrow {
+            position: absolute;
+            top: 35%;
+            width: 35px;
+            height: 4px;
+            background: #2d1b1b;
+            border-radius: 4px;
+            transition: all 0.3s;
+        }
+
+        .eyebrow.left {
+            left: 22%;
+        }
+
+        .eyebrow.right {
+            right: 22%;
+        }
+
+        .eye {
+            position: absolute;
+            top: 45%;
+            width: 28px;
+            height: 38px;
+            background: #2d1b1b;
+            border-radius: 50%;
+            transition: all 0.3s;
+        }
+
+        .eye.left {
+            left: 25%;
+        }
+
+        .eye.right {
+            right: 25%;
+        }
+
+        .eye::after {
+            content: '';
+            position: absolute;
+            top: 18%;
+            left: 18%;
+            width: 8px;
+            height: 8px;
+            background: white;
+            border-radius: 50%;
+            opacity: 0.8;
+        }
+
+        .mouth {
+            position: absolute;
+            bottom: 22%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 20px;
+            height: 8px;
+            background: #d16d6d;
+            border-radius: 12px;
+            transition: all 0.2s;
+        }
+
+        .blush {
+            position: absolute;
+            top: 52%;
+            width: 25px;
+            height: 18px;
+            background: rgba(255, 100, 100, 0.15);
+            border-radius: 50%;
+        }
+
+        .blush.left {
+            left: 18%;
+        }
+
+        .blush.right {
+            right: 18%;
+        }
+
+        /* --- EMOTIONS --- */
+        @keyframes blink {
+
+            0%,
+            96%,
+            100% {
+                height: 38px;
+                top: 45%;
+            }
+
+            98% {
+                height: 2px;
+                top: 52%;
+            }
+        }
+
+        .eye {
+            animation: blink 4s infinite;
+        }
+
+        .listening .head-group {
+            transform: scale(1.03);
+        }
+
+        .listening .eyebrow {
+            top: 32%;
+        }
+
+        .listening .mouth {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            bottom: 25%;
+        }
+
+        @keyframes headbob {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            25% {
+                transform: rotate(1deg);
+            }
+
+            75% {
+                transform: rotate(-1deg);
+            }
+        }
+
+        .speaking .head-group {
+            animation: headbob 2s infinite ease-in-out;
+        }
+
+        @keyframes talkv2 {
+            0% {
+                height: 8px;
+                width: 22px;
+                border-radius: 12px;
+            }
+
+            20% {
+                height: 18px;
+                width: 20px;
+                border-radius: 50%;
+            }
+
+            50% {
+                height: 10px;
+                width: 24px;
+                border-radius: 20px;
+            }
+
+            100% {
+                height: 22px;
+                width: 18px;
+                border-radius: 40%;
+            }
+        }
+
+        .speaking .mouth {
+            animation: talkv2 0.3s infinite alternate;
+            background: #5c2828;
+        }
+
+        .happy .eyebrow {
+            top: 32%;
+        }
+
+        .happy .eye {
+            height: 12px;
+            border-radius: 50% 50% 0 0;
+            background: transparent;
+            border-top: 4px solid #2d1b1b;
+            top: 48%;
+            animation: none;
+        }
+
+        .happy .eye::after {
+            opacity: 0;
+        }
+
+        .happy .mouth {
+            width: 30px;
+            height: 15px;
+            border-radius: 0 0 50% 50%;
+            background: #5c2828;
+            bottom: 20%;
+        }
+
+        .sad .eyebrow.left {
+            transform: rotate(-15deg);
+            top: 34%;
+        }
+
+        .sad .eyebrow.right {
+            transform: rotate(15deg);
+            top: 34%;
+        }
+
+        .sad .eye {
+            height: 12px;
+            border-radius: 0 0 50% 50%;
+            background: transparent;
+            border-bottom: 4px solid #2d1b1b;
+            top: 48%;
+            animation: none;
+        }
+
+        .sad .eye::after {
+            opacity: 0;
+        }
+
+        .sad .mouth {
+            width: 24px;
+            height: 8px;
+            border-radius: 20px 20px 0 0;
+            bottom: 20%;
+        }
+
+        .sad .body-group {
+            transform: translateY(10px);
+        }
+
+        .angry .eyebrow.left {
+            transform: rotate(25deg);
+            top: 38%;
+        }
+
+        .angry .eyebrow.right {
+            transform: rotate(-25deg);
+            top: 38%;
+        }
+
+        .angry .eye {
+            height: 10px;
+            border-radius: 0;
+            transform: rotate(15deg);
+            animation: none;
+        }
+
+        .angry .eye.right {
+            transform: rotate(-15deg);
+        }
+
+        .angry .mouth {
+            width: 20px;
+            height: 4px;
+            border-radius: 0;
+            bottom: 25%;
+        }
+
+        .surprised .eyebrow {
+            top: 28%;
+        }
+
+        .surprised .eye {
+            height: 44px;
+            width: 34px;
+            animation: none;
+        }
+
+        .surprised .mouth {
+            width: 20px;
+            height: 30px;
+            border-radius: 50%;
+            bottom: 18%;
+        }
+
+        /* UI */
+        .ui-layer {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+            z-index: 100;
+        }
+
+        .status-text {
+            position: absolute;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 1.5rem;
+            color: rgba(255, 255, 255, 0.7);
+            background: rgba(0, 0, 0, 0.5);
+            padding: 0.5rem 1.5rem;
+            border-radius: 20px;
+            pointer-events: auto;
+        }
+
+        .status-text.active {
+            color: #4ade80;
+            border: 1px solid rgba(74, 222, 128, 0.5);
+        }
+
+        .btn {
+            pointer-events: auto;
+            cursor: pointer;
+            backdrop-filter: blur(5px);
+        }
+
+        .settings-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 1.5rem;
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+        }
+
+        .home-btn {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            font-size: 1.5rem;
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            padding: 10px 20px;
+            border-radius: 20px;
+            text-decoration: none;
+            color: white;
+        }
+
+        #settings-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 200;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            pointer-events: auto;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .settings-card {
+            background: #2a2a40;
+            padding: 2rem;
+            border-radius: 20px;
+            width: 300px;
+            text-align: center;
+        }
+
+        .action-btn {
+            width: 100%;
+            padding: 1rem;
+            margin: 0.5rem 0;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            cursor: pointer;
+        }
+
+        #interaction-layer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 50;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="ui-layer">
+        <a href="/" class="home-btn btn">🏠</a>
+        <button id="settings-toggle" class="settings-btn btn">⚙️</button>
+        <div class="status-text" id="status">Tap & Hold to Speak</div>
+    </div>
+
+    <div id="settings-overlay" class="hidden">
+        <div class="settings-card">
+            <h2>Settings</h2>
+            <button id="clear-memory-btn" class="action-btn" style="background:#f59e0b">🧹 Clear Memory</button>
+            <button id="stop-audio-btn" class="action-btn" style="background:#ef4444; color:white">⏹️ Stop
+                Audio</button>
+            <button id="close-settings-btn" class="action-btn"
+                style="background:transparent; border:1px solid #555; color:#aaa">Close</button>
+        </div>
+    </div>
+
+    <div class="avatar-scene" id="avatar">
+
+        <div class="body-group">
+            <div class="shoulders"></div>
+            <div class="neck"></div>
+            <div class="collar"></div>
+            <div class="name-tag">ANA</div> <!-- LOWER & RIGHT -->
+            <!-- HANDS REMOVED -->
+        </div>
+
+        <div class="head-group">
+            <div class="hair-back"></div>
+            <div class="face">
+                <div class="feature-container">
+                    <div class="eyebrow left"></div>
+                    <div class="eyebrow right"></div>
+                    <div class="eye left"></div>
+                    <div class="eye right"></div>
+                    <div class="blush left"></div>
+                    <div class="blush right"></div>
+                    <div class="mouth"></div>
+                </div>
+            </div>
+            <div class="hair-bangs"></div>
+        </div>
+    </div>
+
+    <div id="interaction-layer"></div>
+    <audio id="audio-player"></audio>
+
+    <script>
+        const API_BASE = '';
+        const avatar = document.getElementById('avatar');
+        const status = document.getElementById('status');
+        const audioPlayer = document.getElementById('audio-player');
+
+        const settingsOverlay = document.getElementById('settings-overlay');
+        document.getElementById('settings-toggle').onclick = (e) => { e.stopPropagation(); settingsOverlay.classList.remove('hidden'); };
+        document.getElementById('close-settings-btn').onclick = () => settingsOverlay.classList.add('hidden');
+        document.getElementById('stop-audio-btn').onclick = () => { audioPlayer.pause(); audioPlayer.currentTime = 0; setEmotion('neutral'); setState('idle'); settingsOverlay.classList.add('hidden'); };
+        document.getElementById('clear-memory-btn').onclick = async () => {
+            const fd = new FormData(); fd.append('reset_memory', 'true'); fd.append('audio', new Blob([""], { type: 'audio/webm' }));
+            try { await fetch(`${API_BASE}/api/voice-chat`, { method: 'POST', body: fd }); } catch (e) { }
+            status.textContent = "Memory Cleared!"; setTimeout(() => status.textContent = "Tap & Hold to Speak", 2000); settingsOverlay.classList.add('hidden');
+        };
+
+        function setEmotion(emo) {
+            avatar.classList.remove('happy', 'sad', 'angry', 'surprised');
+            if (emo && emo !== 'NEUTRAL') { avatar.classList.add(emo.toLowerCase()); }
+        }
+
+        function setState(state) {
+            avatar.classList.remove('listening', 'speaking', 'thinking');
+            if (state !== 'idle') avatar.classList.add(state);
+            status.textContent = state === 'listening' ? "Listening..." : state === 'speaking' ? "Speaking..." : state === 'thinking' ? "Thinking..." : "Tap & Hold to Speak";
+            if (state === 'listening') { setEmotion('neutral'); status.classList.add('active'); } else { status.classList.remove('active'); }
+        }
+
+        setInterval(() => {
+            if (!avatar.classList.contains('speaking') && !avatar.classList.contains('listening')) {
+                const head = document.querySelector('.head-group');
+                head.style.transform = `rotate(${Math.random() * 4 - 2}deg)`;
+            }
+        }, 3000);
+
+        let mediaRecorder, chunks = [];
+        async function startRecord() {
+            if (!settingsOverlay.classList.contains('hidden')) return;
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                mediaRecorder = new MediaRecorder(stream); chunks = [];
+                mediaRecorder.ondataavailable = e => chunks.push(e.data);
+                mediaRecorder.onstop = async () => { processAudio(new Blob(chunks, { type: 'audio/webm' })); stream.getTracks().forEach(t => t.stop()); };
+                mediaRecorder.start(); setState('listening');
+            } catch (e) { status.textContent = "Mic Error"; }
+        }
+        function stopRecord() { if (mediaRecorder && mediaRecorder.state === 'recording') { mediaRecorder.stop(); setState('thinking'); } }
+
+        async function processAudio(blob) {
+            const fd = new FormData(); fd.append('audio', blob); fd.append('language', 'auto'); fd.append('voice', 'auto');
+            try {
+                const res = await fetch(`${API_BASE}/api/voice-chat`, { method: 'POST', body: fd });
+                const data = await res.json();
+                if (data.success) {
+                    setEmotion(data.emotion); audioPlayer.src = data.audio_url; audioPlayer.play(); setState('speaking');
+                    audioPlayer.onended = () => { setState('idle'); setEmotion('neutral'); };
+                } else { status.textContent = "Sorry, I didn't hear that."; setState('idle'); }
+            } catch (e) { status.textContent = "Error"; setState('idle'); }
+        }
+
+        const touch = document.getElementById('interaction-layer');
+        touch.onmousedown = startRecord; touch.onmouseup = stopRecord; touch.onmouseleave = stopRecord;
+        touch.ontouchstart = (e) => { startRecord(); }; touch.ontouchend = (e) => { e.preventDefault(); stopRecord(); };
+    </script>
+</body>
+
+</html>

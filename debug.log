@@ -1,0 +1,159 @@
+
+[2026-01-20 12:34:56] Voice Chat Error: Invalid rate '-7.5%'.
+Traceback (most recent call last):
+  File "/Users/bugatti/Documents/TTS/server.py", line 792, in voice_chat
+    asyncio.run(generate_tts())
+    ~~~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.0/Frameworks/Python.framework/Versions/3.14/lib/python3.14/asyncio/runners.py", line 204, in run
+    return runner.run(main)
+           ~~~~~~~~~~^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.0/Frameworks/Python.framework/Versions/3.14/lib/python3.14/asyncio/runners.py", line 127, in run
+    return self._loop.run_until_complete(task)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.0/Frameworks/Python.framework/Versions/3.14/lib/python3.14/asyncio/base_events.py", line 719, in run_until_complete
+    return future.result()
+           ~~~~~~~~~~~~~^^
+  File "/Users/bugatti/Documents/TTS/server.py", line 789, in generate_tts
+    communicate = edge_tts.Communicate(ai_response, voice, rate="-7.5%")
+  File "/Users/bugatti/Documents/TTS/venv/lib/python3.14/site-packages/edge_tts/communicate.py", line 333, in __init__
+    self.tts_config = TTSConfig(voice, rate, volume, pitch, boundary)
+                      ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<string>", line 8, in __init__
+  File "/Users/bugatti/Documents/TTS/venv/lib/python3.14/site-packages/edge_tts/data_classes.py", line 74, in __post_init__
+    self.validate_string_param("rate", self.rate, r"^[+-]\d+%$")
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/bugatti/Documents/TTS/venv/lib/python3.14/site-packages/edge_tts/data_classes.py", line 40, in validate_string_param
+    raise ValueError(f"Invalid {param_name} '{param_value}'.")
+ValueError: Invalid rate '-7.5%'.
+
+[2026-01-20 12:35:10] Voice Chat Error: Invalid rate '-7.5%'.
+Traceback (most recent call last):
+  File "/Users/bugatti/Documents/TTS/server.py", line 792, in voice_chat
+    asyncio.run(generate_tts())
+    ~~~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.0/Frameworks/Python.framework/Versions/3.14/lib/python3.14/asyncio/runners.py", line 204, in run
+    return runner.run(main)
+           ~~~~~~~~~~^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.0/Frameworks/Python.framework/Versions/3.14/lib/python3.14/asyncio/runners.py", line 127, in run
+    return self._loop.run_until_complete(task)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.0/Frameworks/Python.framework/Versions/3.14/lib/python3.14/asyncio/base_events.py", line 719, in run_until_complete
+    return future.result()
+           ~~~~~~~~~~~~~^^
+  File "/Users/bugatti/Documents/TTS/server.py", line 789, in generate_tts
+    communicate = edge_tts.Communicate(ai_response, voice, rate="-7.5%")
+  File "/Users/bugatti/Documents/TTS/venv/lib/python3.14/site-packages/edge_tts/communicate.py", line 333, in __init__
+    self.tts_config = TTSConfig(voice, rate, volume, pitch, boundary)
+                      ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<string>", line 8, in __init__
+  File "/Users/bugatti/Documents/TTS/venv/lib/python3.14/site-packages/edge_tts/data_classes.py", line 74, in __post_init__
+    self.validate_string_param("rate", self.rate, r"^[+-]\d+%$")
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/bugatti/Documents/TTS/venv/lib/python3.14/site-packages/edge_tts/data_classes.py", line 40, in validate_string_param
+    raise ValueError(f"Invalid {param_name} '{param_value}'.")
+ValueError: Invalid rate '-7.5%'.
+
+[2026-01-20 12:49:23] Voice Chat Error: Failed to load audio: ffmpeg version 8.0.1 Copyright (c) 2000-2025 the FFmpeg developers
+  built with Apple clang version 17.0.0 (clang-1700.6.3.2)
+  configuration: --prefix=/opt/homebrew/Cellar/ffmpeg/8.0.1_1 --enable-shared --enable-pthreads --enable-version3 --cc=clang --host-cflags= --host-ldflags= --enable-ffplay --enable-gpl --enable-libsvtav1 --enable-libopus --enable-libx264 --enable-libmp3lame --enable-libdav1d --enable-libvpx --enable-libx265 --enable-videotoolbox --enable-audiotoolbox --enable-neon
+  libavutil      60.  8.100 / 60.  8.100
+  libavcodec     62. 11.100 / 62. 11.100
+  libavformat    62.  3.100 / 62.  3.100
+  libavdevice    62.  1.100 / 62.  1.100
+  libavfilter    11.  4.100 / 11.  4.100
+  libswscale      9.  1.100 /  9.  1.100
+  libswresample   6.  1.100 /  6.  1.100
+[matroska,webm @ 0x131906fb0] Format matroska,webm detected only with low score of 1, misdetection possible!
+[matroska,webm @ 0x131906fb0] EBML header parsing failed
+[in#0 @ 0x130f101e0] Error opening input: Invalid data found when processing input
+Error opening input file /var/folders/d3/qv_2ls3j4pzd1yptymd_tlzw0000gn/T/tmp0xlyivza.webm.
+Error opening input files: Invalid data found when processing input
+
+Traceback (most recent call last):
+  File "/Users/bugatti/Documents/TTS/venv/lib/python3.14/site-packages/whisper/audio.py", line 58, in load_audio
+    out = run(cmd, capture_output=True, check=True).stdout
+          ~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.0/Frameworks/Python.framework/Versions/3.14/lib/python3.14/subprocess.py", line 577, in run
+    raise CalledProcessError(retcode, process.args,
+                             output=stdout, stderr=stderr)
+subprocess.CalledProcessError: Command '['ffmpeg', '-nostdin', '-threads', '0', '-i', '/var/folders/d3/qv_2ls3j4pzd1yptymd_tlzw0000gn/T/tmp0xlyivza.webm', '-f', 's16le', '-ac', '1', '-acodec', 'pcm_s16le', '-ar', '16000', '-']' returned non-zero exit status 183.
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Users/bugatti/Documents/TTS/server.py", line 724, in voice_chat
+    stt_result = whisper_model.transcribe(tmp_path, **options)
+  File "/Users/bugatti/Documents/TTS/venv/lib/python3.14/site-packages/whisper/transcribe.py", line 139, in transcribe
+    mel = log_mel_spectrogram(audio, model.dims.n_mels, padding=N_SAMPLES)
+  File "/Users/bugatti/Documents/TTS/venv/lib/python3.14/site-packages/whisper/audio.py", line 140, in log_mel_spectrogram
+    audio = load_audio(audio)
+  File "/Users/bugatti/Documents/TTS/venv/lib/python3.14/site-packages/whisper/audio.py", line 60, in load_audio
+    raise RuntimeError(f"Failed to load audio: {e.stderr.decode()}") from e
+RuntimeError: Failed to load audio: ffmpeg version 8.0.1 Copyright (c) 2000-2025 the FFmpeg developers
+  built with Apple clang version 17.0.0 (clang-1700.6.3.2)
+  configuration: --prefix=/opt/homebrew/Cellar/ffmpeg/8.0.1_1 --enable-shared --enable-pthreads --enable-version3 --cc=clang --host-cflags= --host-ldflags= --enable-ffplay --enable-gpl --enable-libsvtav1 --enable-libopus --enable-libx264 --enable-libmp3lame --enable-libdav1d --enable-libvpx --enable-libx265 --enable-videotoolbox --enable-audiotoolbox --enable-neon
+  libavutil      60.  8.100 / 60.  8.100
+  libavcodec     62. 11.100 / 62. 11.100
+  libavformat    62.  3.100 / 62.  3.100
+  libavdevice    62.  1.100 / 62.  1.100
+  libavfilter    11.  4.100 / 11.  4.100
+  libswscale      9.  1.100 /  9.  1.100
+  libswresample   6.  1.100 /  6.  1.100
+[matroska,webm @ 0x131906fb0] Format matroska,webm detected only with low score of 1, misdetection possible!
+[matroska,webm @ 0x131906fb0] EBML header parsing failed
+[in#0 @ 0x130f101e0] Error opening input: Invalid data found when processing input
+Error opening input file /var/folders/d3/qv_2ls3j4pzd1yptymd_tlzw0000gn/T/tmp0xlyivza.webm.
+Error opening input files: Invalid data found when processing input
+
+
+[2026-01-20 16:27:39] Voice Chat Error: Failed to load audio: ffmpeg version 8.0.1 Copyright (c) 2000-2025 the FFmpeg developers
+  built with Apple clang version 17.0.0 (clang-1700.6.3.2)
+  configuration: --prefix=/opt/homebrew/Cellar/ffmpeg/8.0.1_1 --enable-shared --enable-pthreads --enable-version3 --cc=clang --host-cflags= --host-ldflags= --enable-ffplay --enable-gpl --enable-libsvtav1 --enable-libopus --enable-libx264 --enable-libmp3lame --enable-libdav1d --enable-libvpx --enable-libx265 --enable-videotoolbox --enable-audiotoolbox --enable-neon
+  libavutil      60.  8.100 / 60.  8.100
+  libavcodec     62. 11.100 / 62. 11.100
+  libavformat    62.  3.100 / 62.  3.100
+  libavdevice    62.  1.100 / 62.  1.100
+  libavfilter    11.  4.100 / 11.  4.100
+  libswscale      9.  1.100 /  9.  1.100
+  libswresample   6.  1.100 /  6.  1.100
+[matroska,webm @ 0x125e12680] Format matroska,webm detected only with low score of 1, misdetection possible!
+[matroska,webm @ 0x125e12680] EBML header parsing failed
+[in#0 @ 0x125e045a0] Error opening input: Invalid data found when processing input
+Error opening input file /var/folders/d3/qv_2ls3j4pzd1yptymd_tlzw0000gn/T/tmph81p1a35.webm.
+Error opening input files: Invalid data found when processing input
+
+Traceback (most recent call last):
+  File "/Users/bugatti/Documents/TTS/venv/lib/python3.14/site-packages/whisper/audio.py", line 58, in load_audio
+    out = run(cmd, capture_output=True, check=True).stdout
+          ~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.0/Frameworks/Python.framework/Versions/3.14/lib/python3.14/subprocess.py", line 577, in run
+    raise CalledProcessError(retcode, process.args,
+                             output=stdout, stderr=stderr)
+subprocess.CalledProcessError: Command '['ffmpeg', '-nostdin', '-threads', '0', '-i', '/var/folders/d3/qv_2ls3j4pzd1yptymd_tlzw0000gn/T/tmph81p1a35.webm', '-f', 's16le', '-ac', '1', '-acodec', 'pcm_s16le', '-ar', '16000', '-']' returned non-zero exit status 183.
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Users/bugatti/Documents/TTS/server.py", line 747, in voice_chat
+  File "/Users/bugatti/Documents/TTS/venv/lib/python3.14/site-packages/whisper/transcribe.py", line 139, in transcribe
+    mel = log_mel_spectrogram(audio, model.dims.n_mels, padding=N_SAMPLES)
+  File "/Users/bugatti/Documents/TTS/venv/lib/python3.14/site-packages/whisper/audio.py", line 140, in log_mel_spectrogram
+    audio = load_audio(audio)
+  File "/Users/bugatti/Documents/TTS/venv/lib/python3.14/site-packages/whisper/audio.py", line 60, in load_audio
+    raise RuntimeError(f"Failed to load audio: {e.stderr.decode()}") from e
+RuntimeError: Failed to load audio: ffmpeg version 8.0.1 Copyright (c) 2000-2025 the FFmpeg developers
+  built with Apple clang version 17.0.0 (clang-1700.6.3.2)
+  configuration: --prefix=/opt/homebrew/Cellar/ffmpeg/8.0.1_1 --enable-shared --enable-pthreads --enable-version3 --cc=clang --host-cflags= --host-ldflags= --enable-ffplay --enable-gpl --enable-libsvtav1 --enable-libopus --enable-libx264 --enable-libmp3lame --enable-libdav1d --enable-libvpx --enable-libx265 --enable-videotoolbox --enable-audiotoolbox --enable-neon
+  libavutil      60.  8.100 / 60.  8.100
+  libavcodec     62. 11.100 / 62. 11.100
+  libavformat    62.  3.100 / 62.  3.100
+  libavdevice    62.  1.100 / 62.  1.100
+  libavfilter    11.  4.100 / 11.  4.100
+  libswscale      9.  1.100 /  9.  1.100
+  libswresample   6.  1.100 /  6.  1.100
+[matroska,webm @ 0x125e12680] Format matroska,webm detected only with low score of 1, misdetection possible!
+[matroska,webm @ 0x125e12680] EBML header parsing failed
+[in#0 @ 0x125e045a0] Error opening input: Invalid data found when processing input
+Error opening input file /var/folders/d3/qv_2ls3j4pzd1yptymd_tlzw0000gn/T/tmph81p1a35.webm.
+Error opening input files: Invalid data found when processing input
+
