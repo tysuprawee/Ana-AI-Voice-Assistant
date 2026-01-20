@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voice Training Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0f0f14;
+            color: #fff;
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, #f97316, #ea580c);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 2rem;
+            font-size: 0.9rem;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .card h2 {
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .card h2 .icon {
+            font-size: 1.3rem;
+        }
+
+        label {
+            display: block;
+            font-size: 0.8rem;
+            color: #888;
+            margin-bottom: 0.4rem;
+            margin-top: 1rem;
+        }
+
+        input[type="text"],
+        select {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 0.75rem;
+            color: #fff;
+            font-family: inherit;
+            font-size: 0.95rem;
+        }
+
+        input:focus,
+        select:focus {
+            outline: none;
+            border-color: #f97316;
+        }
+
+        button {
+            padding: 0.875rem 1.5rem;
+            margin-top: 1rem;
+            border: none;
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #f97316, #ea580c);
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 20px rgba(249, 115, 22, 0.4);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            margin-right: 0.5rem;
+        }
+
+        .btn-record {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: white;
+            width: 100%;
+        }
+
+        .btn-record.recording {
+            background: linear-gradient(135deg, #22c55e, #16a34a);
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.7;
+            }
+        }
+
+        .status {
+            font-size: 0.85rem;
+            color: #888;
+            margin-top: 0.75rem;
+        }
+
+        .status.success {
+            color: #4ade80;
+        }
+
+        .status.error {
+            color: #f87171;
+        }
+
+        .status.loading {
+            color: #f97316;
+        }
+
+        .voice-list {
+            margin-top: 1rem;
+        }
+
+        .voice-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
+        }
+
+        .voice-item .name {
+            font-weight: 500;
+        }
+
+        .voice-item .meta {
+            font-size: 0.8rem;
+            color: #666;
+        }
+
+        .voice-item .actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .voice-item button {
+            padding: 0.4rem 0.8rem;
+            font-size: 0.8rem;
+            margin: 0;
+        }
+
+        .instructions {
+            background: rgba(249, 115, 22, 0.1);
+            border: 1px solid rgba(249, 115, 22, 0.3);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .instructions h3 {
+            color: #f97316;
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .instructions ul {
+            padding-left: 1.2rem;
+            font-size: 0.85rem;
+            color: #aaa;
+        }
+
+        .instructions li {
+            margin-bottom: 0.3rem;
+        }
+
+        audio {
+            width: 100%;
+            margin-top: 1rem;
+            border-radius: 8px;
+        }
+
+        .back-link {
+            display: inline-block;
+            color: #888;
+            text-decoration: none;
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+        }
+
+        .back-link:hover {
+            color: #fff;
+        }
+
+        .empty {
+            text-align: center;
+            padding: 2rem;
+            color: #555;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.2rem 0.5rem;
+            background: rgba(249, 115, 22, 0.2);
+            color: #f97316;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            margin-left: 0.5rem;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <a href="/" class="back-link">← Back to Voice Assistant</a>
+
+        <h1>🎤 Voice Training Dashboard</h1>
+        <p class="subtitle">Record your voice and create a clone with Fish Audio</p>
+
+        <!-- Step 1: Record Voice -->
+        <div class="card">
+            <h2><span class="icon">1️⃣</span> Record Your Voice</h2>
+
+            <div class="instructions">
+                <h3>📝 Tips for best results:</h3>
+                <ul>
+                    <li>Record in a quiet environment</li>
+                    <li>Speak naturally for <strong>30+ seconds</strong> (longer = better)</li>
+                    <li>Read the prompts below out loud</li>
+                    <li>Keep consistent distance from microphone</li>
+                </ul>
+            </div>
+
+            <!-- Reading Prompts -->
+            <div style="margin: 1rem 0;">
+                <label>📖 Read This Aloud:</label>
+                <div style="display: flex; gap: 0.5rem; margin: 0.5rem 0;">
+                    <button type="button" class="btn-secondary" onclick="showPrompt('en')"
+                        style="padding: 0.4rem 0.8rem; font-size: 0.85rem;">🇺🇸 English</button>
+                    <button type="button" class="btn-secondary" onclick="showPrompt('th')"
+                        style="padding: 0.4rem 0.8rem; font-size: 0.85rem;">🇹🇭 Thai</button>
+                </div>
+                <div id="reading-prompt"
+                    style="background: rgba(255,255,255,0.05); border-radius: 8px; padding: 1rem; font-size: 0.95rem; line-height: 1.6; margin-top: 0.5rem;">
+                    <strong>English Prompt:</strong><br><br>
+                    "Hello, my name is and I'm recording my voice today. The weather outside is quite nice, and I'm
+                    feeling good. I enjoy spending time with friends and family, cooking delicious food, and learning
+                    new things every day. Technology has changed the way we live, work, and communicate with each other.
+                    I hope this recording captures my natural speaking voice clearly."
+                </div>
+            </div>
+
+            <label for="voice-name">Voice Name</label>
+            <input type="text" id="voice-name" placeholder="my_voice" value="my_voice">
+
+            <button id="record-btn" class="btn-record">🎙️ Start Recording</button>
+
+            <div id="record-status" class="status"></div>
+
+            <audio id="preview-audio" controls style="display: none;"></audio>
+        </div>
+
+        <!-- Step 2: Create Clone -->
+        <div class="card">
+            <h2><span class="icon">2️⃣</span> Create Voice Clone</h2>
+
+            <label for="sample-select">Select Voice Sample</label>
+            <select id="sample-select">
+                <option value="">-- Select a sample --</option>
+            </select>
+
+            <label for="clone-lang">Voice Language</label>
+            <select id="clone-lang">
+                <option value="en">🇺🇸 English</option>
+                <option value="th">🇹🇭 Thai (ภาษาไทย)</option>
+                <option value="ja">🇯🇵 Japanese</option>
+                <option value="zh">🇨🇳 Chinese</option>
+                <option value="ko">🇰🇷 Korean</option>
+            </select>
+
+            <label for="clone-title">Clone Title (display name)</label>
+            <input type="text" id="clone-title" placeholder="My Custom Voice">
+
+            <button id="clone-btn" class="btn-primary" disabled>🚀 Create Voice Clone</button>
+
+            <div id="clone-status" class="status"></div>
+        </div>
+
+        <!-- Step 3: Your Cloned Voices -->
+        <div class="card">
+            <h2><span class="icon">3️⃣</span> Your Cloned Voices <span class="badge" id="voice-count">0</span></h2>
+
+            <button id="refresh-btn" class="btn-secondary">🔄 Refresh</button>
+
+            <div id="voices-list" class="voice-list">
+                <div class="empty">Loading voices...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = '';
+
+        // Reading prompts
+        const prompts = {
+            en: `<strong>🇺🇸 English Prompt:</strong><br><br>
+"Hello, my name is [your name] and I'm recording my voice today. The weather outside is quite nice, and I'm feeling good. I enjoy spending time with friends and family, cooking delicious food, and learning new things every day. Technology has changed the way we live, work, and communicate with each other. I hope this recording captures my natural speaking voice clearly. One, two, three, four, five, six, seven, eight, nine, ten."`,
+            th: `<strong>🇹🇭 Thai Prompt:</strong><br><br>
+"สวัสดีครับ/ค่ะ ผม/ฉันกำลังบันทึกเสียงอยู่ในวันนี้ อากาศข้างนอกดีมาก และรู้สึกสบายดี ผม/ฉันชอบใช้เวลากับครอบครัวและเพื่อนๆ ชอบทำอาหาร และเรียนรู้สิ่งใหม่ๆ ทุกวัน เทคโนโลยีได้เปลี่ยนแปลงวิถีชีวิตของเรา หวังว่าการบันทึกนี้จะจับเสียงพูดที่เป็นธรรมชาติของผม/ฉันได้ชัดเจน หนึ่ง สอง สาม สี่ ห้า หก เจ็ด แปด เก้า สิบ"`
+        };
+
+        function showPrompt(lang) {
+            document.getElementById('reading-prompt').innerHTML = prompts[lang];
+        }
+
+
+        // Elements
+        const voiceNameInput = document.getElementById('voice-name');
+        const recordBtn = document.getElementById('record-btn');
+        const recordStatus = document.getElementById('record-status');
+        const previewAudio = document.getElementById('preview-audio');
+        const sampleSelect = document.getElementById('sample-select');
+        const cloneLangSelect = document.getElementById('clone-lang');
+        const cloneTitleInput = document.getElementById('clone-title');
+        const cloneBtn = document.getElementById('clone-btn');
+        const cloneStatus = document.getElementById('clone-status');
+        const voicesList = document.getElementById('voices-list');
+        const voiceCount = document.getElementById('voice-count');
+        const refreshBtn = document.getElementById('refresh-btn');
+
+        // Recording state
+        let mediaRecorder = null;
+        let audioChunks = [];
+        let isRecording = false;
+        let recordedBlob = null;
+
+        // Initialize
+        loadLocalSamples();
+        loadClonedVoices();
+
+        // Recording
+        recordBtn.addEventListener('click', async () => {
+            if (!isRecording) {
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                    mediaRecorder = new MediaRecorder(stream);
+                    audioChunks = [];
+
+                    mediaRecorder.ondataavailable = (e) => {
+                        audioChunks.push(e.data);
+                    };
+
+                    mediaRecorder.onstop = async () => {
+                        recordedBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                        stream.getTracks().forEach(track => track.stop());
+
+                        // Show preview
+                        previewAudio.src = URL.createObjectURL(recordedBlob);
+                        previewAudio.style.display = 'block';
+
+                        // Upload the sample
+                        await uploadSample();
+                    };
+
+                    mediaRecorder.start();
+                    isRecording = true;
+                    recordBtn.textContent = '⏹️ Stop Recording';
+                    recordBtn.classList.add('recording');
+                    recordStatus.textContent = '🔴 Recording... Speak now!';
+                    recordStatus.className = 'status loading';
+                } catch (err) {
+                    recordStatus.textContent = `❌ Microphone error: ${err.message}`;
+                    recordStatus.className = 'status error';
+                }
+            } else {
+                mediaRecorder.stop();
+                isRecording = false;
+                recordBtn.textContent = '🎙️ Start Recording';
+                recordBtn.classList.remove('recording');
+            }
+        });
+
+        async function uploadSample() {
+            const voiceName = voiceNameInput.value.trim() || 'my_voice';
+
+            recordStatus.textContent = '⏳ Uploading sample...';
+            recordStatus.className = 'status loading';
+
+            try {
+                const formData = new FormData();
+                formData.append('audio', recordedBlob, 'recording.webm');
+                formData.append('name', voiceName);
+
+                const res = await fetch(`${API_BASE}/api/voice/upload`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await res.json();
+
+                if (data.success) {
+                    recordStatus.textContent = `✅ Sample saved as "${data.voice_name}"`;
+                    recordStatus.className = 'status success';
+                    loadLocalSamples();
+                } else {
+                    throw new Error(data.error);
+                }
+            } catch (err) {
+                recordStatus.textContent = `❌ Upload failed: ${err.message}`;
+                recordStatus.className = 'status error';
+            }
+        }
+
+        async function loadLocalSamples() {
+            try {
+                const res = await fetch(`${API_BASE}/api/voice/samples`);
+                const data = await res.json();
+
+                sampleSelect.innerHTML = '<option value="">-- Select a sample --</option>';
+
+                if (data.samples && data.samples.length > 0) {
+                    data.samples.forEach(sample => {
+                        const option = document.createElement('option');
+                        option.value = sample.name;
+                        option.textContent = `${sample.name} (${(sample.size_bytes / 1024).toFixed(1)} KB)`;
+                        sampleSelect.appendChild(option);
+                    });
+                    cloneBtn.disabled = false;
+                }
+            } catch (err) {
+                console.error('Failed to load samples:', err);
+            }
+        }
+
+        // Clone creation
+        sampleSelect.addEventListener('change', () => {
+            cloneBtn.disabled = !sampleSelect.value;
+            if (sampleSelect.value && !cloneTitleInput.value) {
+                cloneTitleInput.value = sampleSelect.value;
+            }
+        });
+
+        cloneBtn.addEventListener('click', async () => {
+            const voiceName = sampleSelect.value;
+            const title = cloneTitleInput.value.trim() || voiceName;
+
+            if (!voiceName) {
+                cloneStatus.textContent = '⚠️ Please select a voice sample';
+                cloneStatus.className = 'status error';
+                return;
+            }
+
+            cloneBtn.disabled = true;
+            cloneStatus.textContent = '⏳ Creating voice clone... This may take a minute.';
+            cloneStatus.className = 'status loading';
+
+            try {
+                const res = await fetch(`${API_BASE}/api/voice/clone`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        name: voiceName,
+                        title: title,
+                        language: cloneLangSelect.value
+                    })
+                });
+
+                const data = await res.json();
+
+                if (data.success) {
+                    cloneStatus.textContent = `✅ Voice clone created! Model ID: ${data.model_id}`;
+                    cloneStatus.className = 'status success';
+                    loadClonedVoices();
+                } else {
+                    throw new Error(data.error);
+                }
+            } catch (err) {
+                cloneStatus.textContent = `❌ Clone failed: ${err.message}`;
+                cloneStatus.className = 'status error';
+            } finally {
+                cloneBtn.disabled = false;
+            }
+        });
+
+        // Load cloned voices
+        async function loadClonedVoices() {
+            try {
+                const res = await fetch(`${API_BASE}/api/voice/list`);
+                const data = await res.json();
+
+                if (data.success && data.voices) {
+                    voiceCount.textContent = data.voices.length;
+
+                    if (data.voices.length === 0) {
+                        voicesList.innerHTML = '<div class="empty">No cloned voices yet. Create one above!</div>';
+                    } else {
+                        voicesList.innerHTML = data.voices.map(voice => `
+                            <div class="voice-item">
+                                <div>
+                                    <div class="name">${voice.title}</div>
+                                    <div class="meta">ID: ${voice.id}</div>
+                                </div>
+                                <div class="actions">
+                                    <button class="btn-secondary" onclick="testVoice('${voice.id}')">🔊 Test</button>
+                                    <button class="btn-secondary" onclick="copyVoiceId('${voice.id}')">📋 Copy ID</button>
+                                </div>
+                            </div>
+                        `).join('');
+                    }
+                } else {
+                    voicesList.innerHTML = '<div class="empty">Failed to load voices</div>';
+                }
+            } catch (err) {
+                voicesList.innerHTML = `<div class="empty">Error: ${err.message}</div>`;
+            }
+        }
+
+        refreshBtn.addEventListener('click', loadClonedVoices);
+
+        // Test voice
+        async function testVoice(voiceId) {
+            try {
+                const res = await fetch(`${API_BASE}/api/tts`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        text: 'Hello! This is a test of my cloned voice.',
+                        voice: `fish:${voiceId}`
+                    })
+                });
+
+                const data = await res.json();
+
+                if (data.success) {
+                    const audio = new Audio(data.audio_url);
+                    audio.play();
+                } else {
+                    alert('Test failed: ' + data.error);
+                }
+            } catch (err) {
+                alert('Test failed: ' + err.message);
+            }
+        }
+
+        function copyVoiceId(voiceId) {
+            navigator.clipboard.writeText(`fish:${voiceId}`);
+            alert(`Copied: fish:${voiceId}`);
+        }
+    </script>
+</body>
+
+</html>

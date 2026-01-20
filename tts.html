@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TTS Studio - Voice AI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0f0f14;
+            color: #fff;
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 2.2rem;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        p.subtitle {
+            text-align: center;
+            color: #888;
+            margin-bottom: 2rem;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        h2 {
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #e5e7eb;
+        }
+
+        label {
+            display: block;
+            font-size: 0.9rem;
+            color: #9ca3af;
+            margin-bottom: 0.5rem;
+            margin-top: 1.5rem;
+            font-weight: 500;
+        }
+
+        label:first-of-type {
+            margin-top: 0;
+        }
+
+        textarea,
+        select {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 1rem;
+            color: #fff;
+            font-family: inherit;
+            font-size: 1rem;
+            resize: vertical;
+            transition: border-color 0.2s;
+        }
+
+        textarea:focus,
+        select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        button {
+            width: 100%;
+            padding: 1rem;
+            margin-top: 1.5rem;
+            border: none;
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+        }
+
+        .btn-secondary {
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            padding: 0.6rem 1.2rem;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: background 0.2s;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .status {
+            text-align: center;
+            margin-top: 1rem;
+            font-size: 0.9rem;
+            color: #9ca3af;
+            min-height: 1.4em;
+        }
+
+        .status.loading {
+            color: #667eea;
+        }
+
+        .status.error {
+            color: #f87171;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        /* Two column layout for larger screens */
+        @media (min-width: 800px) {
+            .studio-grid {
+                display: grid;
+                grid-template-columns: 2fr 1fr;
+                gap: 2rem;
+            }
+        }
+
+        .control-panel {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 1.5rem;
+            height: fit-content;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            background: #f97316;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: transform 0.1s;
+        }
+
+        input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.1);
+        }
+
+        .latency {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.3rem 0.8rem;
+            background: rgba(102, 126, 234, 0.2);
+            border-radius: 20px;
+            font-size: 0.85rem;
+            color: #a5b4fc;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+            <div>
+                <h1>📢 TTS Studio</h1>
+                <p style="color: #888;">Professional Text-to-Speech Editor</p>
+            </div>
+            <div>
+                <a href="/" class="btn-secondary">← Back to Home</a>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="studio-grid">
+                <!-- Left Column: Input -->
+                <div style="display: flex; flex-direction: column;">
+                    <label for="tts-text">Input Text</label>
+                    <textarea id="tts-text" rows="15" placeholder="Type here... Use newlines for pauses.
+Example:
+สวัสดีครับ
+วันนี้อากาศดีจัง" style="flex-grow: 1; font-size: 1.1rem; line-height: 1.6;"></textarea>
+
+                    <div id="text-stats" style="text-align: right; color: #555; font-size: 0.8rem; margin-top: 0.5rem;">
+                        0 characters
+                    </div>
+                </div>
+
+                <!-- Right Column: Controls -->
+                <div class="control-panel">
+                    <h2>⚙️ Settings</h2>
+
+                    <label for="tts-voice">Voice</label>
+                    <select id="tts-voice" style="padding: 0.8rem;">
+                        <optgroup label="♬ Edge-TTS (Unlimited)">
+                            <option value="th-TH-PremwadeeNeural" selected>🇹🇭 Premwadee (Female)</option>
+                            <option value="th-TH-NiwatNeural">🇹🇭 Niwat (Male)</option>
+                            <option value="en-US-AriaNeural">🇺🇸 Aria (Female)</option>
+                            <option value="en-US-GuyNeural">🇺🇸 Guy (Male)</option>
+                            <option value="en-GB-SoniaNeural">🇬🇧 Sonia (Female)</option>
+                            <option value="ja-JP-NanamiNeural">🇯🇵 Nanami (Female)</option>
+                        </optgroup>
+                        <optgroup label="🌟 Google Cloud (High Quality)">
+                            <option value="googlecloud:th-TH-Neural2-C">🇹🇭 Thai Neural (Female)</option>
+                            <option value="googlecloud:th-TH-Standard-A">🇹🇭 Thai Standard (Female)</option>
+                            <option value="googlecloud:en-US-Neural2-F">🇺🇸 US English Neural (Female)</option>
+                            <option value="googlecloud:en-US-Neural2-D">🇺🇸 US English Neural (Male)</option>
+                        </optgroup>
+                        <optgroup label="🌐 Google TTS (Standard)">
+                            <option value="google:th">🇹🇭 Thai (Standard)</option>
+                            <option value="google:en">🇺🇸 English (Standard)</option>
+                        </optgroup>
+                        <optgroup id="tts-fish-voices" label="🎤 Cloned Voices">
+                        </optgroup>
+                    </select>
+
+                    <div style="margin-top: 1.5rem;">
+                        <label for="tts-rate">Speed: <span id="tts-rate-value">0%</span></label>
+                        <input type="range" id="tts-rate" min="-50" max="50" value="0">
+                    </div>
+
+                    <div style="margin-top: 1rem;">
+                        <label for="tts-pitch">Pitch: <span id="tts-pitch-value">0Hz</span></label>
+                        <input type="range" id="tts-pitch" min="-20" max="20" value="0">
+                    </div>
+
+                    <div style="margin-top: 1.5rem; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 1rem;">
+                        <div style="margin-bottom: 0.8rem; display: flex; align-items: flex-start; gap: 0.5rem;">
+                            <input type="checkbox" id="tts-pauses" checked
+                                style="width: 18px; height: 18px; margin-top: 2px; accent-color: #f97316;">
+                            <div>
+                                <label for="tts-pauses" style="margin: 0; cursor: pointer; color: #e5e7eb;">Natural
+                                    Pauses</label>
+                                <div style="font-size: 0.75rem; color: #666;">Respects newlines & spaces</div>
+                            </div>
+                        </div>
+
+                        <div style="display: flex; align-items: flex-start; gap: 0.5rem;">
+                            <input type="checkbox" id="tts-warmth"
+                                style="width: 18px; height: 18px; margin-top: 2px; accent-color: #f97316;">
+                            <div>
+                                <label for="tts-warmth" style="margin: 0; cursor: pointer; color: #e5e7eb;">Warm
+                                    Audio</label>
+                                <div style="font-size: 0.75rem; color: #666;">Bass boost & Normalize</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button id="tts-btn" class="btn-primary">▶ Generate Audio</button>
+
+                    <!-- Progress Bar -->
+                    <div id="tts-progress" class="hidden" style="margin-top: 1rem;">
+                        <div
+                            style="background: rgba(255,255,255,0.1); border-radius: 4px; height: 6px; overflow: hidden;">
+                            <div id="tts-progress-bar"
+                                style="width: 0%; height: 100%; background: #f97316; transition: width 0.3s;"></div>
+                        </div>
+                        <div id="tts-progress-text"
+                            style="font-size: 0.75rem; text-align: center; margin-top: 0.3rem; color: #888;">0%</div>
+                    </div>
+
+                    <div id="tts-status" class="status"></div>
+                </div>
+            </div>
+
+            <!-- Result Area -->
+            <div id="audio-result" class="hidden"
+                style="margin-top: 2rem; padding-top: 2rem; border-top: 1px solid rgba(255,255,255,0.1); text-align: center;">
+                <h3 style="margin-bottom: 1rem;">🎧 Result</h3>
+                <audio id="tts-audio" controls
+                    style="width: 100%; max-width: 600px; display: block; margin: 0 auto;"></audio>
+
+                <div style="margin-top: 1rem; display: flex; justify-content: center; align-items: center; gap: 1rem;">
+                    <div id="tts-latency" class="latency">
+                        <span>⚡</span> <span id="tts-latency-value">0</span> ms
+                    </div>
+                    <a id="download-link" href="#" download class="btn-secondary" style="background: #10b981;">
+                        ⬇️ Download MP3
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = '';
+
+        // Elements
+        const ttsText = document.getElementById('tts-text');
+        const ttsVoice = document.getElementById('tts-voice');
+        const ttsBtn = document.getElementById('tts-btn');
+        const ttsStatus = document.getElementById('tts-status');
+        const ttsAudio = document.getElementById('tts-audio');
+        const audioResult = document.getElementById('audio-result');
+        const downloadLink = document.getElementById('download-link');
+        const ttsLatency = document.getElementById('tts-latency');
+        const ttsLatencyValue = document.getElementById('tts-latency-value');
+        const textStats = document.getElementById('text-stats');
+
+        // Character counter
+        ttsText.addEventListener('input', () => {
+            textStats.textContent = `${ttsText.value.length} characters`;
+        });
+
+        // Load Fish Voices
+        async function loadFishVoices() {
+            try {
+                const res = await fetch(`${API_BASE}/api/voice/list`);
+                const data = await res.json();
+                if (data.success && data.voices && data.voices.length > 0) {
+                    const group = document.getElementById('tts-fish-voices');
+                    data.voices.forEach(voice => {
+                        const opt = document.createElement('option');
+                        opt.value = `fish:${voice.id}`;
+                        opt.textContent = `🎤 ${voice.title}`;
+                        group.appendChild(opt);
+                    });
+                }
+            } catch (err) { console.log('No Fish voices'); }
+        }
+        loadFishVoices();
+
+        // Sliders
+        const ttsRate = document.getElementById('tts-rate');
+        const ttsPitch = document.getElementById('tts-pitch');
+        const ttsRateValue = document.getElementById('tts-rate-value');
+        const ttsPitchValue = document.getElementById('tts-pitch-value');
+
+        ttsRate.addEventListener('input', () => {
+            const val = ttsRate.value;
+            ttsRateValue.textContent = val >= 0 ? `+${val}%` : `${val}%`;
+        });
+
+        ttsPitch.addEventListener('input', () => {
+            const val = ttsPitch.value;
+            ttsPitchValue.textContent = val >= 0 ? `+${val}Hz` : `${val}Hz`;
+        });
+
+        // Generate Handler
+        ttsBtn.addEventListener('click', async () => {
+            const text = ttsText.value.trim();
+            if (!text) {
+                ttsStatus.textContent = 'Please enter text';
+                ttsStatus.className = 'status error';
+                return;
+            }
+
+            ttsBtn.disabled = true;
+            ttsStatus.textContent = 'Generating...';
+            ttsStatus.className = 'status loading';
+            audioResult.classList.add('hidden');
+
+            const progressDiv = document.getElementById('tts-progress');
+            const progressBar = document.getElementById('tts-progress-bar');
+            const progressText = document.getElementById('tts-progress-text');
+            progressDiv.classList.remove('hidden');
+            progressBar.style.width = '0%';
+
+            // Fake progress
+            let progress = 0;
+            const interval = setInterval(() => {
+                if (progress < 90) {
+                    progress += Math.random() * 10;
+                    if (progress > 90) progress = 90;
+                    progressBar.style.width = `${progress}%`;
+                    progressText.textContent = `${Math.round(progress)}%`;
+                }
+            }, 300);
+
+            try {
+                // Formatting settings
+                const rateVal = ttsRate.value;
+                const pitchVal = ttsPitch.value;
+                const rate = rateVal >= 0 ? `+${rateVal}%` : `${rateVal}%`;
+                const pitch = pitchVal >= 0 ? `+${pitchVal}Hz` : `${pitchVal}Hz`;
+                const pauses = document.getElementById('tts-pauses').checked;
+                const warmth = document.getElementById('tts-warmth').checked;
+
+                const res = await fetch(`${API_BASE}/api/tts`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        text,
+                        voice: ttsVoice.value,
+                        rate,
+                        pitch,
+                        pauses,
+                        warmth
+                    })
+                });
+
+                const data = await res.json();
+                clearInterval(interval);
+                progressBar.style.width = '100%';
+                progressText.textContent = '100%';
+
+                if (data.success) {
+                    // Success!
+                    ttsAudio.src = data.audio_url;
+                    downloadLink.href = data.audio_url;
+                    downloadLink.download = `tts_${Date.now()}.mp3`;
+
+                    ttsLatencyValue.textContent = data.latency_ms;
+
+                    audioResult.classList.remove('hidden');
+                    ttsAudio.play();
+
+                    ttsStatus.textContent = 'Done!';
+                    ttsStatus.className = 'status';
+                } else {
+                    throw new Error(data.error);
+                }
+
+            } catch (err) {
+                clearInterval(interval);
+                ttsStatus.textContent = `Error: ${err.message}`;
+                ttsStatus.className = 'status error';
+            } finally {
+                ttsBtn.disabled = false;
+                setTimeout(() => progressDiv.classList.add('hidden'), 1000);
+            }
+        });
+    </script>
+</body>
+
+</html>
