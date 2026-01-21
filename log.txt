@@ -1,24 +1,94 @@
-suprwaee@raspberrypi:~/Desktop/TTS $ python3 server.py
-/home/suprwaee/.local/lib/python3.9/site-packages/google/auth/__init__.py:54: FutureWarning: 
-    You are using a Python version 3.9 past its end of life. Google will update
-    google-auth with critical bug fixes on a best-effort basis, but not
-    with any other fixes or features. Please upgrade your Python version,
-    and then update google-auth.
-    
-  warnings.warn(eol_message.format("3.9"), FutureWarning)
-/home/suprwaee/.local/lib/python3.9/site-packages/google/oauth2/__init__.py:40: FutureWarning: 
-    You are using a Python version 3.9 past its end of life. Google will update
-    google-auth with critical bug fixes on a best-effort basis, but not
-    with any other fixes or features. Please upgrade your Python version,
-    and then update google-auth.
-    
-  warnings.warn(eol_message.format("3.9"), FutureWarning)
-⚠️  Whisper not installed. /api/voice-chat will be unavailable.
-   Use /api/text-chat instead (browser handles speech recognition).
+  Downloading https://www.piwheels.org/simple/pycparser/pycparser-2.23-py3-none-any.whl (118 kB)
+     |████████████████████████████████| 118 kB 331 kB/s 
+Requirement already satisfied: charset_normalizer<4,>=2 in /home/suprwaee/.local/lib/python3.9/site-packages (from requests->vosk) (3.4.4)
+Requirement already satisfied: certifi>=2017.4.17 in /home/suprwaee/.local/lib/python3.9/site-packages (from requests->vosk) (2026.1.4)
+Requirement already satisfied: urllib3<3,>=1.21.1 in /usr/lib/python3/dist-packages (from requests->vosk) (1.26.5)
+Requirement already satisfied: idna<4,>=2.5 in /usr/lib/python3/dist-packages (from requests->vosk) (2.10)
+Building wheels for collected packages: cffi
+  Building wheel for cffi (PEP 517) ... error
+  ERROR: Command errored out with exit status 1:
+   command: /usr/bin/python3 /tmp/tmpfvncc1ko_in_process.py build_wheel /tmp/tmpq8noq_36
+       cwd: /tmp/pip-install-br691_qp/cffi_a08783b2596843f49ea974d618c71227
+  Complete output (66 lines):
+  Package libffi was not found in the pkg-config search path.
+  Perhaps you should add the directory containing `libffi.pc'
+  to the PKG_CONFIG_PATH environment variable
+  No package 'libffi' found
+  Package libffi was not found in the pkg-config search path.
+  Perhaps you should add the directory containing `libffi.pc'
+  to the PKG_CONFIG_PATH environment variable
+  No package 'libffi' found
+  Package libffi was not found in the pkg-config search path.
+  Perhaps you should add the directory containing `libffi.pc'
+  to the PKG_CONFIG_PATH environment variable
+  No package 'libffi' found
+  Package libffi was not found in the pkg-config search path.
+  Perhaps you should add the directory containing `libffi.pc'
+  to the PKG_CONFIG_PATH environment variable
+  No package 'libffi' found
+  Package libffi was not found in the pkg-config search path.
+  Perhaps you should add the directory containing `libffi.pc'
+  to the PKG_CONFIG_PATH environment variable
+  No package 'libffi' found
+  running bdist_wheel
+  running build
+  running build_py
+  creating build/lib.linux-aarch64-cpython-39/cffi
+  copying src/cffi/_shimmed_dist_utils.py -> build/lib.linux-aarch64-cpython-39/cffi
+  copying src/cffi/_imp_emulation.py -> build/lib.linux-aarch64-cpython-39/cffi
+  copying src/cffi/cparser.py -> build/lib.linux-aarch64-cpython-39/cffi
+  copying src/cffi/ffiplatform.py -> build/lib.linux-aarch64-cpython-39/cffi
+  copying src/cffi/recompiler.py -> build/lib.linux-aarch64-cpython-39/cffi
+  copying src/cffi/api.py -> build/lib.linux-aarch64-cpython-39/cffi
+  copying src/cffi/__init__.py -> build/lib.linux-aarch64-cpython-39/cffi
+  copying src/cffi/vengine_gen.py -> build/lib.linux-aarch64-cpython-39/cffi
+  copying src/cffi/lock.py -> build/lib.linux-aarch64-cpython-39/cffi
+  copying src/cffi/setuptools_ext.py -> build/lib.linux-aarch64-cpython-39/cffi
+  copying src/cffi/model.py -> build/lib.linux-aarch64-cpython-39/cffi
+  copying src/cffi/backend_ctypes.py -> build/lib.linux-aarch64-cpython-39/cffi
+  copying src/cffi/error.py -> build/lib.linux-aarch64-cpython-39/cffi
+  copying src/cffi/cffi_opcode.py -> build/lib.linux-aarch64-cpython-39/cffi
+  copying src/cffi/pkgconfig.py -> build/lib.linux-aarch64-cpython-39/cffi
+  copying src/cffi/commontypes.py -> build/lib.linux-aarch64-cpython-39/cffi
+  copying src/cffi/vengine_cpy.py -> build/lib.linux-aarch64-cpython-39/cffi
+  copying src/cffi/verifier.py -> build/lib.linux-aarch64-cpython-39/cffi
+  running egg_info
+  writing src/cffi.egg-info/PKG-INFO
+  writing dependency_links to src/cffi.egg-info/dependency_links.txt
+  writing entry points to src/cffi.egg-info/entry_points.txt
+  writing requirements to src/cffi.egg-info/requires.txt
+  writing top-level names to src/cffi.egg-info/top_level.txt
+  reading manifest file 'src/cffi.egg-info/SOURCES.txt'
+  reading manifest template 'MANIFEST.in'
+  adding license file 'LICENSE'
+  adding license file 'AUTHORS'
+  writing manifest file 'src/cffi.egg-info/SOURCES.txt'
+  copying src/cffi/_cffi_errors.h -> build/lib.linux-aarch64-cpython-39/cffi
+  copying src/cffi/_cffi_include.h -> build/lib.linux-aarch64-cpython-39/cffi
+  copying src/cffi/_embedding.h -> build/lib.linux-aarch64-cpython-39/cffi
+  copying src/cffi/parse_c_type.h -> build/lib.linux-aarch64-cpython-39/cffi
+  running build_ext
+  building '_cffi_backend' extension
+  creating build/temp.linux-aarch64-cpython-39/src/c
+  arm-linux-gnueabihf-gcc -pthread -Wno-unused-result -Wsign-compare -DNDEBUG -g -fwrapv -O2 -Wall -g -ffile-prefix-map=/build/python3.9-Z03yN2/python3.9-3.9.2=. -fstack-protector-strong -Wformat -Werror=format-security -g -fwrapv -O2 -fPIC -DFFI_BUILDING=1 -DUSE__THREAD -DHAVE_SYNC_SYNCHRONIZE -I/usr/include/ffi -I/usr/include/libffi -I/usr/include/python3.9 -c src/c/_cffi_backend.c -o build/temp.linux-aarch64-cpython-39/src/c/_cffi_backend.o
+  src/c/_cffi_backend.c:15:10: fatal error: ffi.h: No such file or directory
+     15 | #include <ffi.h>
+        |          ^~~~~~~
+  compilation terminated.
+  error: command '/usr/bin/arm-linux-gnueabihf-gcc' failed with exit code 1
+  ----------------------------------------
+  ERROR: Failed building wheel for cffi
+Failed to build cffi
+ERROR: Could not build wheels for cffi which use PEP 517 and cannot be installed directly
+📥 Downloading Vosk Speech Recognition Model...
+vosk-model-small-en-us-0.15.zip         100%[==============================================================================>]  39.30M  8.09MB/s    in 5.3s    
+✅ Vosk model downloaded!
 
-🚀 Server running at http://localhost:8080
-   Open in browser to test TTS, STT, and AI Chat
+✅ Setup Complete!
 
- * Serving Flask app "server" (lazy loading)
- * Environment: production
-   WARNING: This is a development server. Do not use it in a production deployment.
+🚀 Run: python3 server.py
+🌐 Open Chromium: http://localhost:8080/avatar
+
+💡 Speech recognition is now OFFLINE using Vosk!
+   No internet needed for voice commands.
+suprwaee@raspberrypi:~/Desktop/TTS $ 
