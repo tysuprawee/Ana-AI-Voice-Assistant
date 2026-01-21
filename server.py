@@ -10,6 +10,8 @@ import time
 import asyncio
 import tempfile
 import re
+import io
+import base64
 from pathlib import Path
 
 from flask import Flask, request, jsonify, send_file, send_from_directory
@@ -943,20 +945,26 @@ Ana:"""
                 voice = 'en-US-AriaNeural'
 
         # Generate TTS
-        filename = f"chat_{int(time.time() * 1000)}.mp3"
-        output_path = OUTPUT_DIR / filename
-        
+        # Generate TTS (In-Memory for Vercel Vercel Compatibility)
+        output_buffer = io.BytesIO()
+
         async def generate_tts():
             communicate = edge_tts.Communicate(ai_response, voice, rate="-8%")
-            await communicate.save(str(output_path))
+            async for chunk in communicate.stream():
+                if chunk["type"] == "audio":
+                    output_buffer.write(chunk["data"])
         
         asyncio.run(generate_tts())
+        
+        # specific_buffer.seek(0) # Not needed for bytes value getting
+        audio_base64 = base64.b64encode(output_buffer.getvalue()).decode('utf-8')
+        audio_url = f"data:audio/mp3;base64,{audio_base64}"
         
         return jsonify({
             'success': True,
             'user_text': user_text,
             'ai_response': ai_response,
-            'audio_url': f'/outputs/{filename}',
+            'audio_url': audio_url,
             'language': detected_lang,
             'emotion': emotion,
             'latency_ms': round((time.time() - total_start) * 1000)
@@ -1140,12 +1148,19 @@ Ana:"""
              print("Warning: Non-Edge voice requested. Defaulting to Premwadee/Aria.")
              voice = 'th-TH-PremwadeeNeural' if detected_lang == 'th' else 'en-US-AriaNeural'
 
+        output_buffer = io.BytesIO()
+
         async def generate_tts():
             # Set speed to -8% (integer string)
             communicate = edge_tts.Communicate(ai_response, voice, rate="-8%")
-            await communicate.save(str(output_path))
+            async for chunk in communicate.stream():
+                if chunk["type"] == "audio":
+                    output_buffer.write(chunk["data"])
         
         asyncio.run(generate_tts())
+        
+        audio_base64 = base64.b64encode(output_buffer.getvalue()).decode('utf-8')
+        audio_url = f"data:audio/mp3;base64,{audio_base64}"
         latencies['tts'] = round((time.time() - tts_start) * 1000)
         latencies['total'] = round((time.time() - total_start) * 1000)
         
@@ -1166,7 +1181,7 @@ Ana:"""
             'success': True,
             'user_text': user_text,
             'ai_response': ai_response,
-            'audio_url': f'/outputs/{filename}',
+            'audio_url': audio_url,
             'language': detected_lang,
             'emotion': emotion,
             'latencies': latencies
