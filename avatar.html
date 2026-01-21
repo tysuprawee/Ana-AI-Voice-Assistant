@@ -696,7 +696,7 @@
     <div class="ui-layer">
         <button id="home-btn" class="home-btn btn">🏠</button>
         <button id="settings-toggle" class="settings-btn btn">⚙️</button>
-        <div class="status-text" id="status">Tap & Hold to Speak</div>
+        <div class="status-text" id="status">Tap to Speak</div>
         <button id="mute-toggle" class="mute-toggle on">🔊 ON</button>
     </div>
 
@@ -812,7 +812,7 @@
                 setTimeout(() => proactiveLoop(), 500);
             } else {
                 status.style.display = '';
-                status.textContent = 'Tap & Hold to Speak';
+                status.textContent = 'Tap to Speak';
             }
         }
 
@@ -874,7 +874,7 @@
                 if (state === 'listening') { status.textContent = "Listening..."; status.classList.add('active'); }
                 else if (state === 'speaking') { status.textContent = "Speaking..."; status.classList.remove('active'); }
                 else if (state === 'thinking') { status.textContent = "Thinking..."; status.classList.remove('active'); }
-                else { status.textContent = 'Tap & Hold to Speak'; status.classList.remove('active'); }
+                else { status.textContent = 'Tap to Speak'; status.classList.remove('active'); }
             }
         }
 
@@ -919,15 +919,21 @@
             console.warn('Web Speech API not supported');
         }
 
+        let isProcessing = false; // Prevent overlapping calls
+
         function startListening() {
-            if (isMuted || !recognition) return;
+            if (isMuted || !recognition || isProcessing) return;
             if (!settingsOverlay.classList.contains('hidden') || !passwordModal.classList.contains('hidden')) return;
+            if (avatar.classList.contains('speaking') || avatar.classList.contains('listening')) return;
+
             try {
                 recognition.start();
                 setState('listening');
+                console.log('🎤 Started listening...');
             } catch (e) {
-                console.error(e);
-                if (currentMode === 'proactive' && !isMuted) setTimeout(proactiveLoop, 1000);
+                console.error('Start error:', e);
+                setState('idle');
+                if (currentMode === 'proactive' && !isMuted) setTimeout(proactiveLoop, 2000);
             }
         }
 
@@ -938,11 +944,13 @@
         }
 
         async function processText(text) {
-            if (!text) {
+            if (!text || isProcessing) {
                 setState('idle');
-                if (currentMode === 'proactive' && !isMuted) setTimeout(proactiveLoop, 500);
+                if (currentMode === 'proactive' && !isMuted) setTimeout(proactiveLoop, 1500);
                 return;
             }
+
+            isProcessing = true;
 
             try {
                 const res = await fetch(`${API_BASE}/api/text-chat`, {
@@ -955,43 +963,73 @@
                 if (data.success) {
                     setEmotion(data.emotion);
                     audioPlayer.src = data.audio_url;
-                    audioPlayer.play();
                     setState('speaking');
+
                     audioPlayer.onended = () => {
                         setState('idle');
                         setEmotion('neutral');
-                        if (currentMode === 'proactive' && !isMuted) setTimeout(proactiveLoop, 500);
+                        isProcessing = false;
+                        // Longer delay before next listen in proactive mode
+                        if (currentMode === 'proactive' && !isMuted) setTimeout(proactiveLoop, 1500);
                     };
+
+                    audioPlayer.onerror = () => {
+                        console.error('Audio playback error');
+                        setState('idle');
+                        isProcessing = false;
+                        if (currentMode === 'proactive' && !isMuted) setTimeout(proactiveLoop, 2000);
+                    };
+
+                    await audioPlayer.play();
                 } else {
                     setState('idle');
-                    if (currentMode === 'proactive' && !isMuted) setTimeout(proactiveLoop, 1000);
+                    isProcessing = false;
+                    if (currentMode === 'proactive' && !isMuted) setTimeout(proactiveLoop, 2000);
                 }
             } catch (e) {
-                console.error(e);
+                console.error('Process error:', e);
                 setState('idle');
-                if (currentMode === 'proactive' && !isMuted) setTimeout(proactiveLoop, 2000);
+                isProcessing = false;
+                if (currentMode === 'proactive' && !isMuted) setTimeout(proactiveLoop, 3000);
             }
         }
 
         // --- PROACTIVE LOOP ---
         function proactiveLoop() {
-            if (currentMode !== 'proactive' || isMuted) return;
-            if (audioPlayer.paused || audioPlayer.ended) { startListening(); }
-            else { setTimeout(proactiveLoop, 500); }
+            if (currentMode !== 'proactive' || isMuted || isProcessing) return;
+            if (!audioPlayer.paused && !audioPlayer.ended) {
+                // Audio still playing, wait
+                setTimeout(proactiveLoop, 1000);
+                return;
+            }
+            startListening();
         }
 
         // --- INTERACTION LAYER ---
         const touch = document.getElementById('interaction-layer');
 
-        // Push-to-Talk Mode
-        touch.onmousedown = () => { if (currentMode === 'push') startListening(); };
-        touch.onmouseup = () => { if (currentMode === 'push') stopListening(); };
-        touch.onmouseleave = () => { if (currentMode === 'push') stopListening(); };
-        touch.ontouchstart = (e) => { if (currentMode === 'push') startListening(); else showControls(); };
-        touch.ontouchend = (e) => { e.preventDefault(); if (currentMode === 'push') stopListening(); };
+        // TAP-to-Talk Mode (changed from hold - better for Pi)
+        touch.onclick = (e) => {
+            if (currentMode === 'push') {
+                if (!avatar.classList.contains('listening') && !avatar.classList.contains('speaking')) {
+                    startListening();
+                }
+            } else if (currentMode === 'proactive') {
+                showControls();
+            }
+        };
 
-        // Proactive Mode: Tap to show controls
-        touch.onclick = () => { if (currentMode === 'proactive') showControls(); };
+        // Touch events for mobile
+        touch.ontouchend = (e) => {
+            e.preventDefault();
+            if (currentMode === 'push') {
+                if (!avatar.classList.contains('listening') && !avatar.classList.contains('speaking')) {
+                    startListening();
+                }
+            } else if (currentMode === 'proactive') {
+                showControls();
+            }
+        };
 
         // --- INIT ---
         applyMode();
