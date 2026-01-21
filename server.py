@@ -1149,6 +1149,19 @@ Ana:"""
         latencies['tts'] = round((time.time() - tts_start) * 1000)
         latencies['total'] = round((time.time() - total_start) * 1000)
         
+        # ===== DEBUG TIMING OUTPUT =====
+        print("\n" + "="*50)
+        print("📊 PERFORMANCE BREAKDOWN:")
+        print("="*50)
+        print(f"  🎤 STT (Vosk):      {latencies.get('stt', 0):>6} ms")
+        if 'search' in latencies:
+            print(f"  🔍 Search:          {latencies['search']:>6} ms")
+        print(f"  🧠 AI (Gemini):     {latencies.get('ai', 0):>6} ms")
+        print(f"  🔊 TTS (Edge):      {latencies.get('tts', 0):>6} ms")
+        print("-"*50)
+        print(f"  ⏱️  TOTAL:           {latencies['total']:>6} ms")
+        print("="*50 + "\n")
+        
         return jsonify({
             'success': True,
             'user_text': user_text,
