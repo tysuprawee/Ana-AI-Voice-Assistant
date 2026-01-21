@@ -908,9 +908,65 @@
             RESTART_DELAY_ERROR: 5000     // Delay after error
         };
 
-        // Start audio monitoring (for proactive mode)
+        // --- WEB SPEECH API INTEGRATION (FAST STT) ---
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        let recognition = null;
+
+        if (SpeechRecognition) {
+            recognition = new SpeechRecognition();
+            recognition.continuous = false;
+            recognition.interimResults = false;
+            recognition.lang = 'en-US';
+
+            recognition.onstart = () => {
+                setState('listening');
+                console.log('🎤 Web Speech Listening...');
+            };
+
+            recognition.onend = () => {
+                if (isRecording) {
+                    // If it stopped but we didn't get a result yet, treat as silence/no speech
+                    if (!isProcessing) setState('idle');
+                    isRecording = false;
+                }
+            };
+
+            recognition.onresult = (event) => {
+                const text = event.results[0][0].transcript;
+                console.log('🗣️ Heard:', text);
+                processText(text);
+            };
+
+            recognition.onerror = (event) => {
+                console.error('Speech error:', event.error);
+                setState('idle');
+                isRecording = false;
+            };
+        }
+
+        // Modified Start Monitoring (Dual Mode)
         async function startMonitoring() {
             if (isMonitoring || isProcessing || isMuted) return;
+            isMonitoring = true;
+
+            // Prefer Web Speech API if available (Vercel Speed)
+            if (recognition) {
+                try {
+                    isRecording = true;
+                    recognition.start();
+                    return;
+                } catch (e) {
+                    console.error("Web Speech Start Failed", e);
+                    isRecording = false;
+                }
+            }
+
+            // Fallback to VAD/MediaRecorder logic
+            startVADMonitoring();
+        }
+
+        async function startVADMonitoring() {
+            // ... Original VAD Logic ...
             if (!settingsOverlay.classList.contains('hidden') || !passwordModal.classList.contains('hidden')) return;
             if (avatar.classList.contains('speaking')) return;
 
@@ -922,22 +978,20 @@
                 source.connect(analyser);
                 analyser.fftSize = 256;
 
-                isMonitoring = true;
                 speechStartTime = 0;
                 silenceStartTime = 0;
-                console.log('👂 Monitoring for speech...');
-
+                console.log('👂 VAD Monitoring...');
                 monitorAudio();
             } catch (e) {
                 console.error('Mic error:', e);
-                if (currentMode === 'proactive' && !isMuted) {
-                    setTimeout(proactiveLoop, VAD_CONFIG.RESTART_DELAY_ERROR);
-                }
             }
         }
 
         function stopMonitoring() {
             isMonitoring = false;
+            if (recognition) {
+                try { recognition.stop(); } catch (e) { }
+            }
             if (audioStream) {
                 audioStream.getTracks().forEach(t => t.stop());
                 audioStream = null;
@@ -948,99 +1002,23 @@
             }
         }
 
-        function monitorAudio() {
-            if (!isMonitoring || !analyser) return;
-
-            const dataArray = new Uint8Array(analyser.frequencyBinCount);
-            analyser.getByteFrequencyData(dataArray);
-            const volume = dataArray.reduce((a, b) => a + b, 0) / dataArray.length;
-            const now = Date.now();
-
-            if (!isRecording) {
-                // Waiting for speech to start
-                if (volume > VAD_CONFIG.SPEECH_THRESHOLD) {
-                    if (!speechStartTime) {
-                        speechStartTime = now;
-                    } else if (now - speechStartTime > VAD_CONFIG.SPEECH_START_DELAY) {
-                        // Speech detected! Start recording
-                        startRecording();
-                    }
-                } else {
-                    speechStartTime = 0;
-                }
-            } else {
-                // Recording - waiting for silence to stop
-                if (volume < VAD_CONFIG.SILENCE_THRESHOLD) {
-                    if (!silenceStartTime) {
-                        silenceStartTime = now;
-                    } else if (now - silenceStartTime > VAD_CONFIG.SILENCE_END_DELAY) {
-                        // Silence detected! Stop recording
-                        stopRecording();
-                        return;
-                    }
-                } else {
-                    silenceStartTime = 0;
-                }
-            }
-
-            requestAnimationFrame(monitorAudio);
-        }
-
-        function startRecording() {
-            if (isRecording || !audioStream) return;
-
-            mediaRecorder = new MediaRecorder(audioStream);
-            audioChunks = [];
-
-            mediaRecorder.ondataavailable = (e) => {
-                if (e.data.size > 0) audioChunks.push(e.data);
-            };
-
-            mediaRecorder.onstop = () => {
-                const recordingDuration = Date.now() - recordingStartTime;
-                const blob = new Blob(audioChunks, { type: 'audio/webm' });
-
-                stopMonitoring();
-
-                // Only process if recording was long enough
-                if (blob.size > 1000 && recordingDuration > VAD_CONFIG.MIN_RECORDING_TIME) {
-                    processAudio(blob);
-                } else {
-                    console.log('⏭️ Recording too short, skipping...');
-                    setState('idle');
-                    if (currentMode === 'proactive' && !isMuted) {
-                        setTimeout(proactiveLoop, VAD_CONFIG.RESTART_DELAY_NO_SPEECH);
-                    }
-                }
-            };
-
-            isRecording = true;
-            recordingStartTime = Date.now();
-            silenceStartTime = 0;
-            mediaRecorder.start();
-            setState('listening');
-            console.log('🎤 Speech detected! Recording...');
-        }
-
-        let recordingStartTime = 0;
-
-        function stopRecording() {
-            if (!isRecording || !mediaRecorder) return;
-            isRecording = false;
-
-            if (mediaRecorder.state === 'recording') {
-                mediaRecorder.stop();
-                setState('thinking');
-                console.log('🛑 Silence detected, processing...');
-            }
-        }
-
-        // Manual recording for tap-to-talk mode
+        // Manual Tap-to-Talk
         async function startListening() {
             if (isMuted || isProcessing) return;
-            if (!settingsOverlay.classList.contains('hidden') || !passwordModal.classList.contains('hidden')) return;
-            if (avatar.classList.contains('speaking') || avatar.classList.contains('listening')) return;
 
+            if (recognition) {
+                try {
+                    isRecording = true;
+                    recognition.start();
+                    return;
+                } catch (e) { }
+            }
+
+            // Fallback to MediaRecorder
+            startManualMediaRecorder();
+        }
+
+        async function startManualMediaRecorder() {
             try {
                 audioStream = await navigator.mediaDevices.getUserMedia({ audio: true });
                 mediaRecorder = new MediaRecorder(audioStream);
@@ -1064,23 +1042,54 @@
 
                 mediaRecorder.start();
                 isRecording = true;
-                recordingStartTime = Date.now();
                 setState('listening');
-                console.log('🎤 Recording started (tap mode)...');
+                console.log('🎤 MediaRecorder started');
 
-                // Setup silence detection for tap mode
+                // VAD for Silence Stop
                 audioContext = new (window.AudioContext || window.webkitAudioContext)();
                 analyser = audioContext.createAnalyser();
                 const source = audioContext.createMediaStreamSource(audioStream);
                 source.connect(analyser);
                 analyser.fftSize = 256;
-
                 silenceStartTime = 0;
                 detectSilenceForTapMode();
 
             } catch (e) {
                 console.error('Mic error:', e);
                 setState('idle');
+            }
+        }
+
+        // New Helper: Process Text Directly (Bypass Server STT)
+        async function processText(text) {
+            setState('thinking');
+            isProcessing = true;
+
+            const payload = {
+                text: text,
+                voice: currentVoice,
+                language: 'auto'
+            };
+
+            try {
+                const response = await fetch(`${API_BASE}/api/text-chat`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    handleAIResponse(data);
+                } else {
+                    console.error('Hub API Error:', data.error);
+                    setState('idle');
+                    isProcessing = false;
+                }
+            } catch (error) {
+                console.error('Fetch Error:', error);
+                setState('idle');
+                isProcessing = false;
             }
         }
 
@@ -1096,15 +1105,83 @@
                 if (!silenceStartTime) {
                     silenceStartTime = now;
                 } else if (now - silenceStartTime > VAD_CONFIG.SILENCE_END_DELAY) {
-                    stopListening();
+                    stopListeningFallback(); // Stop MediaRecorder
                     return;
                 }
             } else {
                 silenceStartTime = 0;
             }
-
             requestAnimationFrame(detectSilenceForTapMode);
         }
+
+        function stopListeningFallback() {
+            if (mediaRecorder && mediaRecorder.state === 'recording') {
+                mediaRecorder.stop();
+            }
+        }
+
+        // Stub out original monitorAudio to only run if called by startVADMonitoring
+        function monitorAudio() {
+            if (!isMonitoring || !analyser) return;
+            // ... (Keep existing logic unchanged for fallback) ...
+            const dataArray = new Uint8Array(analyser.frequencyBinCount);
+            analyser.getByteFrequencyData(dataArray);
+            const volume = dataArray.reduce((a, b) => a + b, 0) / dataArray.length;
+            const now = Date.now();
+
+            if (!isRecording) {
+                if (volume > VAD_CONFIG.SPEECH_THRESHOLD) {
+                    if (!speechStartTime) {
+                        speechStartTime = now;
+                    } else if (now - speechStartTime > VAD_CONFIG.SPEECH_START_DELAY) {
+                        startRecordingFallback();
+                    }
+                } else {
+                    speechStartTime = 0;
+                }
+            } else {
+                if (volume < VAD_CONFIG.SILENCE_THRESHOLD) {
+                    if (!silenceStartTime) {
+                        silenceStartTime = now;
+                    } else if (now - silenceStartTime > VAD_CONFIG.SILENCE_END_DELAY) {
+                        stopRecordingFallback();
+                        return;
+                    }
+                } else {
+                    silenceStartTime = 0;
+                }
+            }
+            requestAnimationFrame(monitorAudio);
+        }
+
+        // Renamed helpers for fallback VAD logic
+        function startRecordingFallback() {
+            if (isRecording || !audioStream) return;
+            mediaRecorder = new MediaRecorder(audioStream);
+            audioChunks = [];
+            mediaRecorder.ondataavailable = (e) => { if (e.data.size > 0) audioChunks.push(e.data); };
+            mediaRecorder.onstop = () => {
+                const blob = new Blob(audioChunks, { type: 'audio/webm' });
+                if (blob.size > 1000) processAudio(blob);
+                else {
+                    setState('idle');
+                    if (currentMode === 'proactive' && !isMuted) setTimeout(startMonitoring, VAD_CONFIG.RESTART_DELAY_NO_SPEECH);
+                }
+            };
+            isRecording = true;
+            mediaRecorder.start();
+            setState('listening');
+            console.log('🎤 VAD triggered recording...');
+        }
+
+        function stopRecordingFallback() {
+            if (mediaRecorder && mediaRecorder.state === 'recording') {
+                mediaRecorder.stop();
+                setState('thinking');
+            }
+        }
+
+
 
         function stopListening() {
             isRecording = false;
