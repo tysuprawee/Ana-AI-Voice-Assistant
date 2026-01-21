@@ -16,11 +16,19 @@ from flask import Flask, request, jsonify, send_file, send_from_directory
 from flask_cors import CORS
 
 import edge_tts
-import whisper
 import httpx
 import ormsgpack
 from google import genai
 from tavily import TavilyClient
+
+# Whisper is OPTIONAL (not needed on Raspberry Pi)
+try:
+    import whisper
+    WHISPER_AVAILABLE = True
+except ImportError:
+    WHISPER_AVAILABLE = False
+    print("⚠️  Whisper not installed. /api/voice-chat will be unavailable.")
+    print("   Use /api/text-chat instead (browser handles speech recognition).")
 
 app = Flask(__name__, static_folder='.')
 CORS(app)
@@ -45,10 +53,12 @@ GOOGLE_CLOUD_API_KEY = "AIzaSyBVgQFHn0U1Lya7J-UsxOW5ll4NgCl-WAU"
 VOICE_SAMPLES_DIR = Path("./voice_samples")
 VOICE_SAMPLES_DIR.mkdir(exist_ok=True)
 
-# Load Whisper model once at startup
-print("⏳ Loading Whisper model...")
-whisper_model = whisper.load_model("base")
-print("✅ Whisper model loaded!")
+# Load Whisper model IF available
+whisper_model = None
+if WHISPER_AVAILABLE:
+    print("⏳ Loading Whisper model...")
+    whisper_model = whisper.load_model("base")
+    print("✅ Whisper model loaded!")
 
 # Output directory
 OUTPUT_DIR = Path("./outputs")
