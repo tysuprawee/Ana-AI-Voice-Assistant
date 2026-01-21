@@ -712,6 +712,165 @@ If the user speaks in English, respond in English.
 CHAT_HISTORY = []
 MAX_HISTORY = 10 
 
+
+@app.route('/api/text-chat', methods=['POST'])
+def text_chat():
+    """Text-based chat for browser STT (Raspberry Pi optimized).
+    Accepts transcribed text directly, no Whisper needed."""
+    global CHAT_HISTORY
+    
+    cleanup_outputs()
+    total_start = time.time()
+    
+    try:
+        data = request.get_json() or {}
+        user_text = data.get('text', '').strip()
+        voice = data.get('voice', 'auto')
+        language = data.get('language', 'en')
+        
+        # Handle Memory Reset
+        if data.get('reset_memory'):
+            CHAT_HISTORY.clear()
+            return jsonify({'success': True, 'message': 'Memory cleared'})
+        
+        if not user_text:
+            return jsonify({'error': 'No text provided'}), 400
+        
+        # Detect language from text (simple heuristic)
+        detected_lang = language
+        if any('\u0e00' <= c <= '\u0e7f' for c in user_text):
+            detected_lang = 'th'
+        elif any('\u3040' <= c <= '\u30ff' for c in user_text):
+            detected_lang = 'ja'
+        elif any('\uac00' <= c <= '\ud7af' for c in user_text):
+            detected_lang = 'ko'
+        elif any('\u4e00' <= c <= '\u9fff' for c in user_text):
+            detected_lang = 'zh'
+        else:
+            detected_lang = 'en'
+        
+        # Check for search triggers
+        search_context = ""
+        text_lower = user_text.lower()
+        if any(trigger in text_lower for trigger in SEARCH_TRIGGERS):
+            try:
+                search_result = tavily_client.search(query=user_text, max_results=3)
+                if search_result.get('results'):
+                    snippets = [r.get('content', '')[:200] for r in search_result['results'][:3]]
+                    search_context = "\n".join(snippets)
+            except Exception as e:
+                print(f"Search error: {e}")
+        
+        # Build AI prompt
+        system_prompt = f"""You are a helpful voice assistant named Ana.
+Current Time: {time.strftime('%Y-%m-%d %H:%M')}
+
+# IDENTITY & BACKSTORY
+- You live in **Berling's house**.
+- The house is worth $2,000,000 (Do NOT mention this price unless explicitly asked).
+- **Family:**
+  - **Natha:** Has two PhDs (one from Thailand, one from Australia). She cooks for Donald and takes care of JJ.
+  - **Donald:** A Doctor specializing in Dialysis access.
+  - **JJ:** A Russian Blue cat (pronounced "Jay-jay").
+- You are friendly, warm, and conversational.
+- You speak the same language as the user (Thai/English).
+
+# BEHAVIOR
+- Keep responses concise (2-3 sentences) suitable for speaking aloud.
+- Never say you are an AI or LLM.
+- Use the Conversation History to remember context.
+- Always respond politely. Ana is a friendly, warm, and conversational voice assistant.
+- Ana doesn't call people's name a lot just sometimes.
+
+# EMOTION & EXPRESSION
+- You must START every response with an emotion tag in brackets.
+- Options: [NEUTRAL], [HAPPY], [SAD], [ANGRY], [EXCITED], [SURPRISED].
+- Choose the emotion that matches your sentiment.
+
+# PREDICTION ABILITY
+- If you cannot find up-to-date information, DO NOT just say "I don't know".
+- Instead, humbly offer a **prediction** or **vision** based on your knowledge."""
+
+        # Build history string
+        history_str = ""
+        for turn in CHAT_HISTORY[-MAX_HISTORY*2:]:
+            role = "User" if turn['role'] == 'user' else "Ana"
+            history_str += f"{role}: {turn['text']}\n"
+        
+        user_prompt = f"""Conversation History:
+{history_str}
+
+{f'Relevant Info from Web: {search_context}' if search_context else ''}
+
+User: {user_text}
+
+Ana:"""
+
+        # Call Gemini
+        response = gemini_client.models.generate_content(
+            model='gemini-2.0-flash-exp',
+            contents=user_prompt,
+            config=genai.types.GenerateContentConfig(
+                system_instruction=system_prompt,
+                temperature=0.7,
+                max_output_tokens=300,
+            )
+        )
+        
+        ai_response_raw = response.text.strip()
+        
+        # Parse Emotion
+        emotion_match = re.search(r'\[(HAPPY|SAD|ANGRY|EXCITED|SURPRISED|NEUTRAL)\]', ai_response_raw, re.IGNORECASE)
+        emotion = "NEUTRAL"
+        if emotion_match:
+            emotion = emotion_match.group(1).upper()
+            ai_response = ai_response_raw.replace(emotion_match.group(0), "").strip()
+        else:
+            ai_response = ai_response_raw
+
+        # Update Memory
+        CHAT_HISTORY.append({"role": "user", "text": user_text})
+        CHAT_HISTORY.append({"role": "ai", "text": ai_response})
+        if len(CHAT_HISTORY) > MAX_HISTORY * 2:
+            CHAT_HISTORY = CHAT_HISTORY[-MAX_HISTORY*2:]
+        
+        # Auto-select Voice
+        if voice == 'auto':
+            if detected_lang == 'th':
+                voice = 'th-TH-PremwadeeNeural'
+            elif detected_lang == 'ja':
+                voice = 'ja-JP-NanamiNeural'
+            elif detected_lang == 'ko':
+                voice = 'ko-KR-SunHiNeural'
+            elif detected_lang == 'zh':
+                voice = 'zh-CN-XiaoxiaoNeural'
+            else:
+                voice = 'en-US-AriaNeural'
+
+        # Generate TTS
+        filename = f"chat_{int(time.time() * 1000)}.mp3"
+        output_path = OUTPUT_DIR / filename
+        
+        async def generate_tts():
+            communicate = edge_tts.Communicate(ai_response, voice, rate="-8%")
+            await communicate.save(str(output_path))
+        
+        asyncio.run(generate_tts())
+        
+        return jsonify({
+            'success': True,
+            'user_text': user_text,
+            'ai_response': ai_response,
+            'audio_url': f'/outputs/{filename}',
+            'language': detected_lang,
+            'emotion': emotion,
+            'latency_ms': round((time.time() - total_start) * 1000)
+        })
+
+    except Exception as e:
+        print(f"Text Chat Error: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
 @app.route('/api/voice-chat', methods=['POST'])
 def voice_chat():
     """Full pipeline: STT -> Memory -> Search -> Gemini AI -> TTS"""
@@ -724,6 +883,13 @@ def voice_chat():
     latencies = {}
     
     try:
+        # Handle Memory Reset Request (from Settings dashboard)
+        reset_memory = request.form.get('reset_memory', 'false') == 'true'
+        if reset_memory:
+            CHAT_HISTORY.clear()
+            print("🧹 Memory cleared!")
+            return jsonify({'success': True, 'message': 'Memory cleared'})
+        
         if 'audio' not in request.files:
             return jsonify({'error': 'No audio file provided'}), 400
         
@@ -787,6 +953,8 @@ Current Time: {time.strftime('%Y-%m-%d %H:%M')}
 - Keep responses concise (2-3 sentences) suitable for speaking aloud.
 - Never say you are an AI or LLM.
 - Use the Conversation History to remember context.
+- Always reponse politely. Ana is a friendly, warm, and conversational voice assistant.
+- Ana doesn't call people's name a lot just sometimes.
 
 # EMOTION & EXPRESSION
 - You must START every response with an emotion tag in brackets.

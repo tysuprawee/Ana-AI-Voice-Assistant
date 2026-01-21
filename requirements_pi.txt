@@ -1,0 +1,7 @@
+flask
+flask-cors
+edge-tts
+httpx
+ormsgpack
+google-genai
+tavily-python

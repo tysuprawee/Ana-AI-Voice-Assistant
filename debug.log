@@ -157,3 +157,315 @@ RuntimeError: Failed to load audio: ffmpeg version 8.0.1 Copyright (c) 2000-2025
 Error opening input file /var/folders/d3/qv_2ls3j4pzd1yptymd_tlzw0000gn/T/tmph81p1a35.webm.
 Error opening input files: Invalid data found when processing input
 
+
+[2026-01-20 19:24:08] Voice Chat Error: Failed to load audio: ffmpeg version 8.0.1 Copyright (c) 2000-2025 the FFmpeg developers
+  built with Apple clang version 17.0.0 (clang-1700.6.3.2)
+  configuration: --prefix=/opt/homebrew/Cellar/ffmpeg/8.0.1_1 --enable-shared --enable-pthreads --enable-version3 --cc=clang --host-cflags= --host-ldflags= --enable-ffplay --enable-gpl --enable-libsvtav1 --enable-libopus --enable-libx264 --enable-libmp3lame --enable-libdav1d --enable-libvpx --enable-libx265 --enable-videotoolbox --enable-audiotoolbox --enable-neon
+  libavutil      60.  8.100 / 60.  8.100
+  libavcodec     62. 11.100 / 62. 11.100
+  libavformat    62.  3.100 / 62.  3.100
+  libavdevice    62.  1.100 / 62.  1.100
+  libavfilter    11.  4.100 / 11.  4.100
+  libswscale      9.  1.100 /  9.  1.100
+  libswresample   6.  1.100 /  6.  1.100
+[matroska,webm @ 0x138804b00] Format matroska,webm detected only with low score of 1, misdetection possible!
+[matroska,webm @ 0x138804b00] EBML header parsing failed
+[in#0 @ 0x138804890] Error opening input: Invalid data found when processing input
+Error opening input file /var/folders/d3/qv_2ls3j4pzd1yptymd_tlzw0000gn/T/tmp8cew3bsc.webm.
+Error opening input files: Invalid data found when processing input
+
+Traceback (most recent call last):
+  File "/Users/bugatti/Documents/TTS/venv/lib/python3.14/site-packages/whisper/audio.py", line 58, in load_audio
+    out = run(cmd, capture_output=True, check=True).stdout
+          ~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.0/Frameworks/Python.framework/Versions/3.14/lib/python3.14/subprocess.py", line 577, in run
+    raise CalledProcessError(retcode, process.args,
+                             output=stdout, stderr=stderr)
+subprocess.CalledProcessError: Command '['ffmpeg', '-nostdin', '-threads', '0', '-i', '/var/folders/d3/qv_2ls3j4pzd1yptymd_tlzw0000gn/T/tmp8cew3bsc.webm', '-f', 's16le', '-ac', '1', '-acodec', 'pcm_s16le', '-ar', '16000', '-']' returned non-zero exit status 183.
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Users/bugatti/Documents/TTS/server.py", line 747, in voice_chat
+  File "/Users/bugatti/Documents/TTS/venv/lib/python3.14/site-packages/whisper/transcribe.py", line 139, in transcribe
+    mel = log_mel_spectrogram(audio, model.dims.n_mels, padding=N_SAMPLES)
+  File "/Users/bugatti/Documents/TTS/venv/lib/python3.14/site-packages/whisper/audio.py", line 140, in log_mel_spectrogram
+    audio = load_audio(audio)
+  File "/Users/bugatti/Documents/TTS/venv/lib/python3.14/site-packages/whisper/audio.py", line 60, in load_audio
+    raise RuntimeError(f"Failed to load audio: {e.stderr.decode()}") from e
+RuntimeError: Failed to load audio: ffmpeg version 8.0.1 Copyright (c) 2000-2025 the FFmpeg developers
+  built with Apple clang version 17.0.0 (clang-1700.6.3.2)
+  configuration: --prefix=/opt/homebrew/Cellar/ffmpeg/8.0.1_1 --enable-shared --enable-pthreads --enable-version3 --cc=clang --host-cflags= --host-ldflags= --enable-ffplay --enable-gpl --enable-libsvtav1 --enable-libopus --enable-libx264 --enable-libmp3lame --enable-libdav1d --enable-libvpx --enable-libx265 --enable-videotoolbox --enable-audiotoolbox --enable-neon
+  libavutil      60.  8.100 / 60.  8.100
+  libavcodec     62. 11.100 / 62. 11.100
+  libavformat    62.  3.100 / 62.  3.100
+  libavdevice    62.  1.100 / 62.  1.100
+  libavfilter    11.  4.100 / 11.  4.100
+  libswscale      9.  1.100 /  9.  1.100
+  libswresample   6.  1.100 /  6.  1.100
+[matroska,webm @ 0x138804b00] Format matroska,webm detected only with low score of 1, misdetection possible!
+[matroska,webm @ 0x138804b00] EBML header parsing failed
+[in#0 @ 0x138804890] Error opening input: Invalid data found when processing input
+Error opening input file /var/folders/d3/qv_2ls3j4pzd1yptymd_tlzw0000gn/T/tmp8cew3bsc.webm.
+Error opening input files: Invalid data found when processing input
+
+
+[2026-01-20 19:24:43] Voice Chat Error: Failed to load audio: ffmpeg version 8.0.1 Copyright (c) 2000-2025 the FFmpeg developers
+  built with Apple clang version 17.0.0 (clang-1700.6.3.2)
+  configuration: --prefix=/opt/homebrew/Cellar/ffmpeg/8.0.1_1 --enable-shared --enable-pthreads --enable-version3 --cc=clang --host-cflags= --host-ldflags= --enable-ffplay --enable-gpl --enable-libsvtav1 --enable-libopus --enable-libx264 --enable-libmp3lame --enable-libdav1d --enable-libvpx --enable-libx265 --enable-videotoolbox --enable-audiotoolbox --enable-neon
+  libavutil      60.  8.100 / 60.  8.100
+  libavcodec     62. 11.100 / 62. 11.100
+  libavformat    62.  3.100 / 62.  3.100
+  libavdevice    62.  1.100 / 62.  1.100
+  libavfilter    11.  4.100 / 11.  4.100
+  libswscale      9.  1.100 /  9.  1.100
+  libswresample   6.  1.100 /  6.  1.100
+[matroska,webm @ 0x125f04430] Format matroska,webm detected only with low score of 1, misdetection possible!
+[matroska,webm @ 0x125f04430] EBML header parsing failed
+[in#0 @ 0x125f041c0] Error opening input: Invalid data found when processing input
+Error opening input file /var/folders/d3/qv_2ls3j4pzd1yptymd_tlzw0000gn/T/tmpp2p5lels.webm.
+Error opening input files: Invalid data found when processing input
+
+Traceback (most recent call last):
+  File "/Users/bugatti/Documents/TTS/venv/lib/python3.14/site-packages/whisper/audio.py", line 58, in load_audio
+    out = run(cmd, capture_output=True, check=True).stdout
+          ~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.0/Frameworks/Python.framework/Versions/3.14/lib/python3.14/subprocess.py", line 577, in run
+    raise CalledProcessError(retcode, process.args,
+                             output=stdout, stderr=stderr)
+subprocess.CalledProcessError: Command '['ffmpeg', '-nostdin', '-threads', '0', '-i', '/var/folders/d3/qv_2ls3j4pzd1yptymd_tlzw0000gn/T/tmpp2p5lels.webm', '-f', 's16le', '-ac', '1', '-acodec', 'pcm_s16le', '-ar', '16000', '-']' returned non-zero exit status 183.
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Users/bugatti/Documents/TTS/server.py", line 747, in voice_chat
+  File "/Users/bugatti/Documents/TTS/venv/lib/python3.14/site-packages/whisper/transcribe.py", line 139, in transcribe
+    mel = log_mel_spectrogram(audio, model.dims.n_mels, padding=N_SAMPLES)
+  File "/Users/bugatti/Documents/TTS/venv/lib/python3.14/site-packages/whisper/audio.py", line 140, in log_mel_spectrogram
+    audio = load_audio(audio)
+  File "/Users/bugatti/Documents/TTS/venv/lib/python3.14/site-packages/whisper/audio.py", line 60, in load_audio
+    raise RuntimeError(f"Failed to load audio: {e.stderr.decode()}") from e
+RuntimeError: Failed to load audio: ffmpeg version 8.0.1 Copyright (c) 2000-2025 the FFmpeg developers
+  built with Apple clang version 17.0.0 (clang-1700.6.3.2)
+  configuration: --prefix=/opt/homebrew/Cellar/ffmpeg/8.0.1_1 --enable-shared --enable-pthreads --enable-version3 --cc=clang --host-cflags= --host-ldflags= --enable-ffplay --enable-gpl --enable-libsvtav1 --enable-libopus --enable-libx264 --enable-libmp3lame --enable-libdav1d --enable-libvpx --enable-libx265 --enable-videotoolbox --enable-audiotoolbox --enable-neon
+  libavutil      60.  8.100 / 60.  8.100
+  libavcodec     62. 11.100 / 62. 11.100
+  libavformat    62.  3.100 / 62.  3.100
+  libavdevice    62.  1.100 / 62.  1.100
+  libavfilter    11.  4.100 / 11.  4.100
+  libswscale      9.  1.100 /  9.  1.100
+  libswresample   6.  1.100 /  6.  1.100
+[matroska,webm @ 0x125f04430] Format matroska,webm detected only with low score of 1, misdetection possible!
+[matroska,webm @ 0x125f04430] EBML header parsing failed
+[in#0 @ 0x125f041c0] Error opening input: Invalid data found when processing input
+Error opening input file /var/folders/d3/qv_2ls3j4pzd1yptymd_tlzw0000gn/T/tmpp2p5lels.webm.
+Error opening input files: Invalid data found when processing input
+
+
+[2026-01-20 19:24:54] Voice Chat Error: Failed to load audio: ffmpeg version 8.0.1 Copyright (c) 2000-2025 the FFmpeg developers
+  built with Apple clang version 17.0.0 (clang-1700.6.3.2)
+  configuration: --prefix=/opt/homebrew/Cellar/ffmpeg/8.0.1_1 --enable-shared --enable-pthreads --enable-version3 --cc=clang --host-cflags= --host-ldflags= --enable-ffplay --enable-gpl --enable-libsvtav1 --enable-libopus --enable-libx264 --enable-libmp3lame --enable-libdav1d --enable-libvpx --enable-libx265 --enable-videotoolbox --enable-audiotoolbox --enable-neon
+  libavutil      60.  8.100 / 60.  8.100
+  libavcodec     62. 11.100 / 62. 11.100
+  libavformat    62.  3.100 / 62.  3.100
+  libavdevice    62.  1.100 / 62.  1.100
+  libavfilter    11.  4.100 / 11.  4.100
+  libswscale      9.  1.100 /  9.  1.100
+  libswresample   6.  1.100 /  6.  1.100
+[matroska,webm @ 0x141604350] Format matroska,webm detected only with low score of 1, misdetection possible!
+[matroska,webm @ 0x141604350] EBML header parsing failed
+[in#0 @ 0x1416040e0] Error opening input: Invalid data found when processing input
+Error opening input file /var/folders/d3/qv_2ls3j4pzd1yptymd_tlzw0000gn/T/tmp3kh869v6.webm.
+Error opening input files: Invalid data found when processing input
+
+Traceback (most recent call last):
+  File "/Users/bugatti/Documents/TTS/venv/lib/python3.14/site-packages/whisper/audio.py", line 58, in load_audio
+    out = run(cmd, capture_output=True, check=True).stdout
+          ~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.0/Frameworks/Python.framework/Versions/3.14/lib/python3.14/subprocess.py", line 577, in run
+    raise CalledProcessError(retcode, process.args,
+                             output=stdout, stderr=stderr)
+subprocess.CalledProcessError: Command '['ffmpeg', '-nostdin', '-threads', '0', '-i', '/var/folders/d3/qv_2ls3j4pzd1yptymd_tlzw0000gn/T/tmp3kh869v6.webm', '-f', 's16le', '-ac', '1', '-acodec', 'pcm_s16le', '-ar', '16000', '-']' returned non-zero exit status 183.
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Users/bugatti/Documents/TTS/server.py", line 747, in voice_chat
+  File "/Users/bugatti/Documents/TTS/venv/lib/python3.14/site-packages/whisper/transcribe.py", line 139, in transcribe
+    mel = log_mel_spectrogram(audio, model.dims.n_mels, padding=N_SAMPLES)
+  File "/Users/bugatti/Documents/TTS/venv/lib/python3.14/site-packages/whisper/audio.py", line 140, in log_mel_spectrogram
+    audio = load_audio(audio)
+  File "/Users/bugatti/Documents/TTS/venv/lib/python3.14/site-packages/whisper/audio.py", line 60, in load_audio
+    raise RuntimeError(f"Failed to load audio: {e.stderr.decode()}") from e
+RuntimeError: Failed to load audio: ffmpeg version 8.0.1 Copyright (c) 2000-2025 the FFmpeg developers
+  built with Apple clang version 17.0.0 (clang-1700.6.3.2)
+  configuration: --prefix=/opt/homebrew/Cellar/ffmpeg/8.0.1_1 --enable-shared --enable-pthreads --enable-version3 --cc=clang --host-cflags= --host-ldflags= --enable-ffplay --enable-gpl --enable-libsvtav1 --enable-libopus --enable-libx264 --enable-libmp3lame --enable-libdav1d --enable-libvpx --enable-libx265 --enable-videotoolbox --enable-audiotoolbox --enable-neon
+  libavutil      60.  8.100 / 60.  8.100
+  libavcodec     62. 11.100 / 62. 11.100
+  libavformat    62.  3.100 / 62.  3.100
+  libavdevice    62.  1.100 / 62.  1.100
+  libavfilter    11.  4.100 / 11.  4.100
+  libswscale      9.  1.100 /  9.  1.100
+  libswresample   6.  1.100 /  6.  1.100
+[matroska,webm @ 0x141604350] Format matroska,webm detected only with low score of 1, misdetection possible!
+[matroska,webm @ 0x141604350] EBML header parsing failed
+[in#0 @ 0x1416040e0] Error opening input: Invalid data found when processing input
+Error opening input file /var/folders/d3/qv_2ls3j4pzd1yptymd_tlzw0000gn/T/tmp3kh869v6.webm.
+Error opening input files: Invalid data found when processing input
+
+
+[2026-01-20 19:25:13] Voice Chat Error: Failed to load audio: ffmpeg version 8.0.1 Copyright (c) 2000-2025 the FFmpeg developers
+  built with Apple clang version 17.0.0 (clang-1700.6.3.2)
+  configuration: --prefix=/opt/homebrew/Cellar/ffmpeg/8.0.1_1 --enable-shared --enable-pthreads --enable-version3 --cc=clang --host-cflags= --host-ldflags= --enable-ffplay --enable-gpl --enable-libsvtav1 --enable-libopus --enable-libx264 --enable-libmp3lame --enable-libdav1d --enable-libvpx --enable-libx265 --enable-videotoolbox --enable-audiotoolbox --enable-neon
+  libavutil      60.  8.100 / 60.  8.100
+  libavcodec     62. 11.100 / 62. 11.100
+  libavformat    62.  3.100 / 62.  3.100
+  libavdevice    62.  1.100 / 62.  1.100
+  libavfilter    11.  4.100 / 11.  4.100
+  libswscale      9.  1.100 /  9.  1.100
+  libswresample   6.  1.100 /  6.  1.100
+[matroska,webm @ 0x151704fa0] Format matroska,webm detected only with low score of 1, misdetection possible!
+[matroska,webm @ 0x151704fa0] EBML header parsing failed
+[in#0 @ 0x151704d40] Error opening input: Invalid data found when processing input
+Error opening input file /var/folders/d3/qv_2ls3j4pzd1yptymd_tlzw0000gn/T/tmp7f6nic5k.webm.
+Error opening input files: Invalid data found when processing input
+
+Traceback (most recent call last):
+  File "/Users/bugatti/Documents/TTS/venv/lib/python3.14/site-packages/whisper/audio.py", line 58, in load_audio
+    out = run(cmd, capture_output=True, check=True).stdout
+          ~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.0/Frameworks/Python.framework/Versions/3.14/lib/python3.14/subprocess.py", line 577, in run
+    raise CalledProcessError(retcode, process.args,
+                             output=stdout, stderr=stderr)
+subprocess.CalledProcessError: Command '['ffmpeg', '-nostdin', '-threads', '0', '-i', '/var/folders/d3/qv_2ls3j4pzd1yptymd_tlzw0000gn/T/tmp7f6nic5k.webm', '-f', 's16le', '-ac', '1', '-acodec', 'pcm_s16le', '-ar', '16000', '-']' returned non-zero exit status 183.
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Users/bugatti/Documents/TTS/server.py", line 747, in voice_chat
+  File "/Users/bugatti/Documents/TTS/venv/lib/python3.14/site-packages/whisper/transcribe.py", line 139, in transcribe
+    mel = log_mel_spectrogram(audio, model.dims.n_mels, padding=N_SAMPLES)
+  File "/Users/bugatti/Documents/TTS/venv/lib/python3.14/site-packages/whisper/audio.py", line 140, in log_mel_spectrogram
+    audio = load_audio(audio)
+  File "/Users/bugatti/Documents/TTS/venv/lib/python3.14/site-packages/whisper/audio.py", line 60, in load_audio
+    raise RuntimeError(f"Failed to load audio: {e.stderr.decode()}") from e
+RuntimeError: Failed to load audio: ffmpeg version 8.0.1 Copyright (c) 2000-2025 the FFmpeg developers
+  built with Apple clang version 17.0.0 (clang-1700.6.3.2)
+  configuration: --prefix=/opt/homebrew/Cellar/ffmpeg/8.0.1_1 --enable-shared --enable-pthreads --enable-version3 --cc=clang --host-cflags= --host-ldflags= --enable-ffplay --enable-gpl --enable-libsvtav1 --enable-libopus --enable-libx264 --enable-libmp3lame --enable-libdav1d --enable-libvpx --enable-libx265 --enable-videotoolbox --enable-audiotoolbox --enable-neon
+  libavutil      60.  8.100 / 60.  8.100
+  libavcodec     62. 11.100 / 62. 11.100
+  libavformat    62.  3.100 / 62.  3.100
+  libavdevice    62.  1.100 / 62.  1.100
+  libavfilter    11.  4.100 / 11.  4.100
+  libswscale      9.  1.100 /  9.  1.100
+  libswresample   6.  1.100 /  6.  1.100
+[matroska,webm @ 0x151704fa0] Format matroska,webm detected only with low score of 1, misdetection possible!
+[matroska,webm @ 0x151704fa0] EBML header parsing failed
+[in#0 @ 0x151704d40] Error opening input: Invalid data found when processing input
+Error opening input file /var/folders/d3/qv_2ls3j4pzd1yptymd_tlzw0000gn/T/tmp7f6nic5k.webm.
+Error opening input files: Invalid data found when processing input
+
+
+[2026-01-20 19:25:38] Voice Chat Error: Failed to load audio: ffmpeg version 8.0.1 Copyright (c) 2000-2025 the FFmpeg developers
+  built with Apple clang version 17.0.0 (clang-1700.6.3.2)
+  configuration: --prefix=/opt/homebrew/Cellar/ffmpeg/8.0.1_1 --enable-shared --enable-pthreads --enable-version3 --cc=clang --host-cflags= --host-ldflags= --enable-ffplay --enable-gpl --enable-libsvtav1 --enable-libopus --enable-libx264 --enable-libmp3lame --enable-libdav1d --enable-libvpx --enable-libx265 --enable-videotoolbox --enable-audiotoolbox --enable-neon
+  libavutil      60.  8.100 / 60.  8.100
+  libavcodec     62. 11.100 / 62. 11.100
+  libavformat    62.  3.100 / 62.  3.100
+  libavdevice    62.  1.100 / 62.  1.100
+  libavfilter    11.  4.100 / 11.  4.100
+  libswscale      9.  1.100 /  9.  1.100
+  libswresample   6.  1.100 /  6.  1.100
+[matroska,webm @ 0x14d0123a0] Format matroska,webm detected only with low score of 1, misdetection possible!
+[matroska,webm @ 0x14d0123a0] EBML header parsing failed
+[in#0 @ 0x14c6043a0] Error opening input: Invalid data found when processing input
+Error opening input file /var/folders/d3/qv_2ls3j4pzd1yptymd_tlzw0000gn/T/tmpylmnu62l.webm.
+Error opening input files: Invalid data found when processing input
+
+Traceback (most recent call last):
+  File "/Users/bugatti/Documents/TTS/venv/lib/python3.14/site-packages/whisper/audio.py", line 58, in load_audio
+    out = run(cmd, capture_output=True, check=True).stdout
+          ~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.0/Frameworks/Python.framework/Versions/3.14/lib/python3.14/subprocess.py", line 577, in run
+    raise CalledProcessError(retcode, process.args,
+                             output=stdout, stderr=stderr)
+subprocess.CalledProcessError: Command '['ffmpeg', '-nostdin', '-threads', '0', '-i', '/var/folders/d3/qv_2ls3j4pzd1yptymd_tlzw0000gn/T/tmpylmnu62l.webm', '-f', 's16le', '-ac', '1', '-acodec', 'pcm_s16le', '-ar', '16000', '-']' returned non-zero exit status 183.
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Users/bugatti/Documents/TTS/server.py", line 747, in voice_chat
+  File "/Users/bugatti/Documents/TTS/venv/lib/python3.14/site-packages/whisper/transcribe.py", line 139, in transcribe
+    mel = log_mel_spectrogram(audio, model.dims.n_mels, padding=N_SAMPLES)
+  File "/Users/bugatti/Documents/TTS/venv/lib/python3.14/site-packages/whisper/audio.py", line 140, in log_mel_spectrogram
+    audio = load_audio(audio)
+  File "/Users/bugatti/Documents/TTS/venv/lib/python3.14/site-packages/whisper/audio.py", line 60, in load_audio
+    raise RuntimeError(f"Failed to load audio: {e.stderr.decode()}") from e
+RuntimeError: Failed to load audio: ffmpeg version 8.0.1 Copyright (c) 2000-2025 the FFmpeg developers
+  built with Apple clang version 17.0.0 (clang-1700.6.3.2)
+  configuration: --prefix=/opt/homebrew/Cellar/ffmpeg/8.0.1_1 --enable-shared --enable-pthreads --enable-version3 --cc=clang --host-cflags= --host-ldflags= --enable-ffplay --enable-gpl --enable-libsvtav1 --enable-libopus --enable-libx264 --enable-libmp3lame --enable-libdav1d --enable-libvpx --enable-libx265 --enable-videotoolbox --enable-audiotoolbox --enable-neon
+  libavutil      60.  8.100 / 60.  8.100
+  libavcodec     62. 11.100 / 62. 11.100
+  libavformat    62.  3.100 / 62.  3.100
+  libavdevice    62.  1.100 / 62.  1.100
+  libavfilter    11.  4.100 / 11.  4.100
+  libswscale      9.  1.100 /  9.  1.100
+  libswresample   6.  1.100 /  6.  1.100
+[matroska,webm @ 0x14d0123a0] Format matroska,webm detected only with low score of 1, misdetection possible!
+[matroska,webm @ 0x14d0123a0] EBML header parsing failed
+[in#0 @ 0x14c6043a0] Error opening input: Invalid data found when processing input
+Error opening input file /var/folders/d3/qv_2ls3j4pzd1yptymd_tlzw0000gn/T/tmpylmnu62l.webm.
+Error opening input files: Invalid data found when processing input
+
+
+[2026-01-20 19:25:55] Voice Chat Error: Failed to load audio: ffmpeg version 8.0.1 Copyright (c) 2000-2025 the FFmpeg developers
+  built with Apple clang version 17.0.0 (clang-1700.6.3.2)
+  configuration: --prefix=/opt/homebrew/Cellar/ffmpeg/8.0.1_1 --enable-shared --enable-pthreads --enable-version3 --cc=clang --host-cflags= --host-ldflags= --enable-ffplay --enable-gpl --enable-libsvtav1 --enable-libopus --enable-libx264 --enable-libmp3lame --enable-libdav1d --enable-libvpx --enable-libx265 --enable-videotoolbox --enable-audiotoolbox --enable-neon
+  libavutil      60.  8.100 / 60.  8.100
+  libavcodec     62. 11.100 / 62. 11.100
+  libavformat    62.  3.100 / 62.  3.100
+  libavdevice    62.  1.100 / 62.  1.100
+  libavfilter    11.  4.100 / 11.  4.100
+  libswscale      9.  1.100 /  9.  1.100
+  libswresample   6.  1.100 /  6.  1.100
+[matroska,webm @ 0x12de07360] Format matroska,webm detected only with low score of 1, misdetection possible!
+[matroska,webm @ 0x12de07360] EBML header parsing failed
+[in#0 @ 0x12de07100] Error opening input: Invalid data found when processing input
+Error opening input file /var/folders/d3/qv_2ls3j4pzd1yptymd_tlzw0000gn/T/tmpt3a5wgtc.webm.
+Error opening input files: Invalid data found when processing input
+
+Traceback (most recent call last):
+  File "/Users/bugatti/Documents/TTS/venv/lib/python3.14/site-packages/whisper/audio.py", line 58, in load_audio
+    out = run(cmd, capture_output=True, check=True).stdout
+          ~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.0/Frameworks/Python.framework/Versions/3.14/lib/python3.14/subprocess.py", line 577, in run
+    raise CalledProcessError(retcode, process.args,
+                             output=stdout, stderr=stderr)
+subprocess.CalledProcessError: Command '['ffmpeg', '-nostdin', '-threads', '0', '-i', '/var/folders/d3/qv_2ls3j4pzd1yptymd_tlzw0000gn/T/tmpt3a5wgtc.webm', '-f', 's16le', '-ac', '1', '-acodec', 'pcm_s16le', '-ar', '16000', '-']' returned non-zero exit status 183.
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Users/bugatti/Documents/TTS/server.py", line 747, in voice_chat
+  File "/Users/bugatti/Documents/TTS/venv/lib/python3.14/site-packages/whisper/transcribe.py", line 139, in transcribe
+    mel = log_mel_spectrogram(audio, model.dims.n_mels, padding=N_SAMPLES)
+  File "/Users/bugatti/Documents/TTS/venv/lib/python3.14/site-packages/whisper/audio.py", line 140, in log_mel_spectrogram
+    audio = load_audio(audio)
+  File "/Users/bugatti/Documents/TTS/venv/lib/python3.14/site-packages/whisper/audio.py", line 60, in load_audio
+    raise RuntimeError(f"Failed to load audio: {e.stderr.decode()}") from e
+RuntimeError: Failed to load audio: ffmpeg version 8.0.1 Copyright (c) 2000-2025 the FFmpeg developers
+  built with Apple clang version 17.0.0 (clang-1700.6.3.2)
+  configuration: --prefix=/opt/homebrew/Cellar/ffmpeg/8.0.1_1 --enable-shared --enable-pthreads --enable-version3 --cc=clang --host-cflags= --host-ldflags= --enable-ffplay --enable-gpl --enable-libsvtav1 --enable-libopus --enable-libx264 --enable-libmp3lame --enable-libdav1d --enable-libvpx --enable-libx265 --enable-videotoolbox --enable-audiotoolbox --enable-neon
+  libavutil      60.  8.100 / 60.  8.100
+  libavcodec     62. 11.100 / 62. 11.100
+  libavformat    62.  3.100 / 62.  3.100
+  libavdevice    62.  1.100 / 62.  1.100
+  libavfilter    11.  4.100 / 11.  4.100
+  libswscale      9.  1.100 /  9.  1.100
+  libswresample   6.  1.100 /  6.  1.100
+[matroska,webm @ 0x12de07360] Format matroska,webm detected only with low score of 1, misdetection possible!
+[matroska,webm @ 0x12de07360] EBML header parsing failed
+[in#0 @ 0x12de07100] Error opening input: Invalid data found when processing input
+Error opening input file /var/folders/d3/qv_2ls3j4pzd1yptymd_tlzw0000gn/T/tmpt3a5wgtc.webm.
+Error opening input files: Invalid data found when processing input
+

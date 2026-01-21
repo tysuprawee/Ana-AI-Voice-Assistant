@@ -22,7 +22,6 @@
             user-select: none;
         }
 
-        /* --- LAYOUT --- */
         .avatar-scene {
             position: relative;
             width: 400px;
@@ -32,7 +31,6 @@
             align-items: flex-end;
         }
 
-        /* --- ANIMATIONS --- */
         @keyframes breathe {
 
             0%,
@@ -77,7 +75,6 @@
             z-index: 20;
         }
 
-        /* --- BODY PARTS --- */
         .shoulders {
             position: absolute;
             bottom: -20px;
@@ -115,13 +112,10 @@
             z-index: 7;
         }
 
-        /* NAME TAG (Moved Lower & Visible) */
         .name-tag {
             position: absolute;
             bottom: 60px;
-            /* Lower on chest */
             right: 70px;
-            /* Right side */
             width: 70px;
             height: 28px;
             background: linear-gradient(135deg, #fcd34d 0%, #fbbf24 100%);
@@ -134,11 +128,9 @@
             justify-content: center;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
             z-index: 25;
-            /* Highly visible */
         }
 
         .name-tag::after {
-            /* Pin */
             content: '';
             position: absolute;
             top: -5px;
@@ -147,7 +139,6 @@
             background: #cbd5e1;
         }
 
-        /* --- HEAD --- */
         .hair-back {
             position: absolute;
             top: 0;
@@ -186,7 +177,6 @@
             clip-path: ellipse(100% 85% at 50% 15%);
         }
 
-        /* FEATURES */
         .feature-container {
             position: absolute;
             top: 0;
@@ -272,7 +262,6 @@
             right: 18%;
         }
 
-        /* --- EMOTIONS --- */
         @keyframes blink {
 
             0%,
@@ -329,7 +318,6 @@
             0% {
                 height: 8px;
                 width: 22px;
-                border-radius: 12px;
             }
 
             20% {
@@ -341,13 +329,11 @@
             50% {
                 height: 10px;
                 width: 24px;
-                border-radius: 20px;
             }
 
             100% {
                 height: 22px;
                 width: 18px;
-                border-radius: 40%;
             }
         }
 
@@ -460,6 +446,30 @@
             bottom: 18%;
         }
 
+        /* MUTED STATE: Big X over Ana */
+        .muted .avatar-scene {
+            opacity: 0.4;
+        }
+
+        .muted-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            pointer-events: none;
+            z-index: 90;
+        }
+
+        .muted-overlay::before {
+            content: '🔇';
+            font-size: 150px;
+            opacity: 0.6;
+        }
+
         /* UI */
         .ui-layer {
             position: absolute;
@@ -482,6 +492,7 @@
             padding: 0.5rem 1.5rem;
             border-radius: 20px;
             pointer-events: auto;
+            transition: opacity 0.3s;
         }
 
         .status-text.active {
@@ -493,6 +504,13 @@
             pointer-events: auto;
             cursor: pointer;
             backdrop-filter: blur(5px);
+            border: none;
+            color: white;
+            transition: opacity 0.3s, transform 0.2s;
+        }
+
+        .btn:active {
+            transform: scale(0.95);
         }
 
         .settings-btn {
@@ -501,7 +519,6 @@
             right: 20px;
             font-size: 1.5rem;
             background: rgba(255, 255, 255, 0.1);
-            border: none;
             border-radius: 50%;
             width: 50px;
             height: 50px;
@@ -513,37 +530,101 @@
             left: 20px;
             font-size: 1.5rem;
             background: rgba(255, 255, 255, 0.1);
-            border: none;
             padding: 10px 20px;
             border-radius: 20px;
             text-decoration: none;
-            color: white;
         }
 
-        #settings-overlay {
+        /* MUTE TOGGLE BUTTON (Proactive Mode) */
+        .mute-toggle {
+            position: absolute;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 1rem 2rem;
+            font-size: 1.3rem;
+            font-weight: 600;
+            border-radius: 30px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s;
+            pointer-events: auto;
+        }
+
+        .mute-toggle.on {
+            background: #4ade80;
+            color: #000;
+        }
+
+        .mute-toggle.off {
+            background: #ef4444;
+            color: #fff;
+        }
+
+        /* Hide mute toggle in Push-to-Talk mode */
+        .mute-toggle {
+            display: none;
+        }
+
+        .proactive-mode .mute-toggle {
+            display: block;
+        }
+
+        /* Hide elements in Proactive Mode until tapped */
+        .proactive-mode .ui-layer>*:not(.mute-toggle) {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .proactive-mode.show-controls .ui-layer>* {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .proactive-mode .status-text {
+            display: none;
+        }
+
+        .proactive-mode .mute-toggle {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .proactive-mode.show-controls .mute-toggle {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        /* Modals */
+        .modal {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.8);
-            z-index: 200;
+            background: rgba(0, 0, 0, 0.85);
+            z-index: 300;
             display: flex;
             justify-content: center;
             align-items: center;
-            pointer-events: auto;
+            backdrop-filter: blur(10px);
         }
 
         .hidden {
             display: none !important;
         }
 
-        .settings-card {
+        .modal-card {
             background: #2a2a40;
             padding: 2rem;
             border-radius: 20px;
-            width: 300px;
+            width: 320px;
             text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .modal-card h2 {
+            margin-bottom: 1.5rem;
         }
 
         .action-btn {
@@ -554,6 +635,48 @@
             border-radius: 12px;
             font-size: 1.1rem;
             cursor: pointer;
+            font-weight: 600;
+        }
+
+        #pin-input {
+            width: 150px;
+            padding: 1rem;
+            font-size: 2rem;
+            text-align: center;
+            border-radius: 12px;
+            border: 2px solid #555;
+            background: #1a1a2e;
+            color: white;
+            letter-spacing: 10px;
+            margin-bottom: 1rem;
+        }
+
+        #pin-error {
+            color: #ef4444;
+            margin-top: 0.5rem;
+        }
+
+        .mode-selector {
+            display: flex;
+            gap: 10px;
+            margin: 1rem 0;
+        }
+
+        .mode-btn {
+            flex: 1;
+            padding: 1rem;
+            border-radius: 12px;
+            border: 2px solid #555;
+            background: transparent;
+            color: #aaa;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .mode-btn.active {
+            border-color: #4ade80;
+            color: white;
+            background: rgba(74, 222, 128, 0.1);
         }
 
         #interaction-layer {
@@ -571,32 +694,50 @@
 <body>
 
     <div class="ui-layer">
-        <a href="/" class="home-btn btn">🏠</a>
+        <button id="home-btn" class="home-btn btn">🏠</button>
         <button id="settings-toggle" class="settings-btn btn">⚙️</button>
         <div class="status-text" id="status">Tap & Hold to Speak</div>
+        <button id="mute-toggle" class="mute-toggle on">🔊 ON</button>
     </div>
 
-    <div id="settings-overlay" class="hidden">
-        <div class="settings-card">
-            <h2>Settings</h2>
+    <!-- MUTED OVERLAY (Big mute icon) -->
+    <div id="muted-overlay" class="muted-overlay hidden"></div>
+
+    <!-- PASSWORD MODAL -->
+    <div id="password-modal" class="modal hidden">
+        <div class="modal-card">
+            <h2>🔐 Enter PIN</h2>
+            <input type="password" id="pin-input" maxlength="4" inputmode="numeric" placeholder="****">
+            <button id="pin-submit" class="action-btn" style="background:#4ade80; color:#000;">Unlock</button>
+            <p id="pin-error" class="hidden">Incorrect PIN</p>
+        </div>
+    </div>
+
+    <!-- SETTINGS MODAL -->
+    <div id="settings-overlay" class="modal hidden">
+        <div class="modal-card">
+            <h2>⚙️ Settings</h2>
+            <p style="color:#888; font-size:0.9rem; margin-bottom:0.5rem;">Interaction Mode</p>
+            <div class="mode-selector">
+                <button class="mode-btn" data-mode="push">🖐️ Push-to-Talk</button>
+                <button class="mode-btn" data-mode="proactive">🎙️ Proactive</button>
+            </div>
+            <p style="color:#666; font-size:0.75rem; margin-bottom:1rem;" id="mode-desc">Hold to record.</p>
             <button id="clear-memory-btn" class="action-btn" style="background:#f59e0b">🧹 Clear Memory</button>
             <button id="stop-audio-btn" class="action-btn" style="background:#ef4444; color:white">⏹️ Stop
                 Audio</button>
             <button id="close-settings-btn" class="action-btn"
-                style="background:transparent; border:1px solid #555; color:#aaa">Close</button>
+                style="background:transparent; border:1px solid #555; color:#aaa; margin-top:1rem;">Close</button>
         </div>
     </div>
 
     <div class="avatar-scene" id="avatar">
-
         <div class="body-group">
             <div class="shoulders"></div>
             <div class="neck"></div>
             <div class="collar"></div>
-            <div class="name-tag">ANA</div> <!-- LOWER & RIGHT -->
-            <!-- HANDS REMOVED -->
+            <div class="name-tag">ANA</div>
         </div>
-
         <div class="head-group">
             <div class="hair-back"></div>
             <div class="face">
@@ -619,67 +760,241 @@
 
     <script>
         const API_BASE = '';
+        const PIN_CODE = '2142';
+
         const avatar = document.getElementById('avatar');
         const status = document.getElementById('status');
         const audioPlayer = document.getElementById('audio-player');
-
         const settingsOverlay = document.getElementById('settings-overlay');
-        document.getElementById('settings-toggle').onclick = (e) => { e.stopPropagation(); settingsOverlay.classList.remove('hidden'); };
-        document.getElementById('close-settings-btn').onclick = () => settingsOverlay.classList.add('hidden');
-        document.getElementById('stop-audio-btn').onclick = () => { audioPlayer.pause(); audioPlayer.currentTime = 0; setEmotion('neutral'); setState('idle'); settingsOverlay.classList.add('hidden'); };
-        document.getElementById('clear-memory-btn').onclick = async () => {
-            const fd = new FormData(); fd.append('reset_memory', 'true'); fd.append('audio', new Blob([""], { type: 'audio/webm' }));
-            try { await fetch(`${API_BASE}/api/voice-chat`, { method: 'POST', body: fd }); } catch (e) { }
-            status.textContent = "Memory Cleared!"; setTimeout(() => status.textContent = "Tap & Hold to Speak", 2000); settingsOverlay.classList.add('hidden');
-        };
+        const passwordModal = document.getElementById('password-modal');
+        const pinInput = document.getElementById('pin-input');
+        const pinError = document.getElementById('pin-error');
+        const modeDesc = document.getElementById('mode-desc');
+        const muteToggle = document.getElementById('mute-toggle');
+        const mutedOverlay = document.getElementById('muted-overlay');
 
-        function setEmotion(emo) {
-            avatar.classList.remove('happy', 'sad', 'angry', 'surprised');
-            if (emo && emo !== 'NEUTRAL') { avatar.classList.add(emo.toLowerCase()); }
+        let isAuthenticated = false;
+        let pendingAction = null;
+        let currentMode = localStorage.getItem('ana_mode') || 'push';
+        let isMuted = false;
+        let hideControlsTimer = null;
+
+        // --- PASSWORD LOGIC ---
+        function requestAuth(action) {
+            if (isAuthenticated) { executeAction(action); }
+            else { pendingAction = action; pinInput.value = ''; pinError.classList.add('hidden'); passwordModal.classList.remove('hidden'); pinInput.focus(); }
+        }
+        function executeAction(action) {
+            if (action === 'settings') { settingsOverlay.classList.remove('hidden'); }
+            else if (action === 'home') { window.location.href = '/'; }
+        }
+        document.getElementById('pin-submit').onclick = () => {
+            if (pinInput.value === PIN_CODE) { isAuthenticated = true; passwordModal.classList.add('hidden'); if (pendingAction) executeAction(pendingAction); }
+            else { pinError.classList.remove('hidden'); pinInput.value = ''; }
+        };
+        pinInput.onkeydown = (e) => { if (e.key === 'Enter') document.getElementById('pin-submit').click(); };
+        document.getElementById('home-btn').onclick = (e) => { e.stopPropagation(); requestAuth('home'); };
+        document.getElementById('settings-toggle').onclick = (e) => { e.stopPropagation(); requestAuth('settings'); };
+        document.getElementById('close-settings-btn').onclick = () => { settingsOverlay.classList.add('hidden'); applyMode(); };
+
+        // --- MODE LOGIC ---
+        function applyMode() {
+            document.body.classList.remove('proactive-mode', 'muted');
+            mutedOverlay.classList.add('hidden');
+            isMuted = false;
+
+            if (currentMode === 'proactive') {
+                document.body.classList.add('proactive-mode');
+                status.style.display = 'none';
+                muteToggle.className = 'mute-toggle on';
+                muteToggle.textContent = '🔊 ON';
+                // Start listening loop
+                setTimeout(() => proactiveLoop(), 500);
+            } else {
+                status.style.display = '';
+                status.textContent = 'Tap & Hold to Speak';
+            }
         }
 
+        function updateModeUI() {
+            document.querySelectorAll('.mode-btn').forEach(btn => { btn.classList.toggle('active', btn.dataset.mode === currentMode); });
+            modeDesc.textContent = currentMode === 'push' ? 'Hold to record.' : 'Always listening. Tap screen to show ON/OFF.';
+        }
+        document.querySelectorAll('.mode-btn').forEach(btn => {
+            btn.onclick = () => { currentMode = btn.dataset.mode; localStorage.setItem('ana_mode', currentMode); updateModeUI(); };
+        });
+        updateModeUI();
+
+        // --- MUTE TOGGLE (Proactive Mode) ---
+        muteToggle.onclick = (e) => {
+            e.stopPropagation();
+            isMuted = !isMuted;
+            if (isMuted) {
+                muteToggle.className = 'mute-toggle off';
+                muteToggle.textContent = '🔇 OFF';
+                document.body.classList.add('muted');
+                mutedOverlay.classList.remove('hidden');
+                stopRecord();
+            } else {
+                muteToggle.className = 'mute-toggle on';
+                muteToggle.textContent = '🔊 ON';
+                document.body.classList.remove('muted');
+                mutedOverlay.classList.add('hidden');
+                proactiveLoop();
+            }
+        };
+
+        // --- SHOW/HIDE CONTROLS ON TAP (Proactive Mode) ---
+        function showControls() {
+            if (currentMode !== 'proactive') return;
+            document.body.classList.add('show-controls');
+            clearTimeout(hideControlsTimer);
+            hideControlsTimer = setTimeout(() => { document.body.classList.remove('show-controls'); }, 4000);
+        }
+
+        // --- SETTINGS ACTIONS ---
+        document.getElementById('stop-audio-btn').onclick = () => { audioPlayer.pause(); audioPlayer.currentTime = 0; setEmotion('neutral'); setState('idle'); settingsOverlay.classList.add('hidden'); };
+        document.getElementById('clear-memory-btn').onclick = async () => {
+            try {
+                await fetch(`${API_BASE}/api/text-chat`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ reset_memory: true })
+                });
+            } catch (e) { }
+            alert('Memory Cleared!'); settingsOverlay.classList.add('hidden');
+        };
+
+        // --- AVATAR LOGIC ---
+        function setEmotion(emo) { avatar.classList.remove('happy', 'sad', 'angry', 'surprised'); if (emo && emo !== 'NEUTRAL') avatar.classList.add(emo.toLowerCase()); }
         function setState(state) {
             avatar.classList.remove('listening', 'speaking', 'thinking');
             if (state !== 'idle') avatar.classList.add(state);
-            status.textContent = state === 'listening' ? "Listening..." : state === 'speaking' ? "Speaking..." : state === 'thinking' ? "Thinking..." : "Tap & Hold to Speak";
-            if (state === 'listening') { setEmotion('neutral'); status.classList.add('active'); } else { status.classList.remove('active'); }
+            if (currentMode === 'push') {
+                if (state === 'listening') { status.textContent = "Listening..."; status.classList.add('active'); }
+                else if (state === 'speaking') { status.textContent = "Speaking..."; status.classList.remove('active'); }
+                else if (state === 'thinking') { status.textContent = "Thinking..."; status.classList.remove('active'); }
+                else { status.textContent = 'Tap & Hold to Speak'; status.classList.remove('active'); }
+            }
         }
 
         setInterval(() => {
             if (!avatar.classList.contains('speaking') && !avatar.classList.contains('listening')) {
-                const head = document.querySelector('.head-group');
-                head.style.transform = `rotate(${Math.random() * 4 - 2}deg)`;
+                document.querySelector('.head-group').style.transform = `rotate(${Math.random() * 4 - 2}deg)`;
             }
         }, 3000);
 
-        let mediaRecorder, chunks = [];
-        async function startRecord() {
-            if (!settingsOverlay.classList.contains('hidden')) return;
-            try {
-                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                mediaRecorder = new MediaRecorder(stream); chunks = [];
-                mediaRecorder.ondataavailable = e => chunks.push(e.data);
-                mediaRecorder.onstop = async () => { processAudio(new Blob(chunks, { type: 'audio/webm' })); stream.getTracks().forEach(t => t.stop()); };
-                mediaRecorder.start(); setState('listening');
-            } catch (e) { status.textContent = "Mic Error"; }
-        }
-        function stopRecord() { if (mediaRecorder && mediaRecorder.state === 'recording') { mediaRecorder.stop(); setState('thinking'); } }
+        // --- WEB SPEECH API (Browser-based STT) ---
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        let recognition = null;
+        let recognizedText = '';
 
-        async function processAudio(blob) {
-            const fd = new FormData(); fd.append('audio', blob); fd.append('language', 'auto'); fd.append('voice', 'auto');
+        if (SpeechRecognition) {
+            recognition = new SpeechRecognition();
+            recognition.continuous = false;
+            recognition.interimResults = false;
+            recognition.lang = 'en-US'; // Will auto-detect Thai too
+
+            recognition.onresult = (event) => {
+                recognizedText = event.results[0][0].transcript;
+                console.log('Heard:', recognizedText);
+                setState('thinking');
+                processText(recognizedText);
+            };
+
+            recognition.onerror = (event) => {
+                console.error('Speech error:', event.error);
+                setState('idle');
+                if (currentMode === 'proactive' && !isMuted) setTimeout(proactiveLoop, 1000);
+            };
+
+            recognition.onend = () => {
+                // If no result and proactive, restart
+                if (avatar.classList.contains('listening')) {
+                    setState('idle');
+                    if (currentMode === 'proactive' && !isMuted) setTimeout(proactiveLoop, 500);
+                }
+            };
+        } else {
+            console.warn('Web Speech API not supported');
+        }
+
+        function startListening() {
+            if (isMuted || !recognition) return;
+            if (!settingsOverlay.classList.contains('hidden') || !passwordModal.classList.contains('hidden')) return;
             try {
-                const res = await fetch(`${API_BASE}/api/voice-chat`, { method: 'POST', body: fd });
+                recognition.start();
+                setState('listening');
+            } catch (e) {
+                console.error(e);
+                if (currentMode === 'proactive' && !isMuted) setTimeout(proactiveLoop, 1000);
+            }
+        }
+
+        function stopListening() {
+            if (recognition) {
+                try { recognition.stop(); } catch (e) { }
+            }
+        }
+
+        async function processText(text) {
+            if (!text) {
+                setState('idle');
+                if (currentMode === 'proactive' && !isMuted) setTimeout(proactiveLoop, 500);
+                return;
+            }
+
+            try {
+                const res = await fetch(`${API_BASE}/api/text-chat`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ text: text, voice: 'auto', language: 'auto' })
+                });
                 const data = await res.json();
+
                 if (data.success) {
-                    setEmotion(data.emotion); audioPlayer.src = data.audio_url; audioPlayer.play(); setState('speaking');
-                    audioPlayer.onended = () => { setState('idle'); setEmotion('neutral'); };
-                } else { status.textContent = "Sorry, I didn't hear that."; setState('idle'); }
-            } catch (e) { status.textContent = "Error"; setState('idle'); }
+                    setEmotion(data.emotion);
+                    audioPlayer.src = data.audio_url;
+                    audioPlayer.play();
+                    setState('speaking');
+                    audioPlayer.onended = () => {
+                        setState('idle');
+                        setEmotion('neutral');
+                        if (currentMode === 'proactive' && !isMuted) setTimeout(proactiveLoop, 500);
+                    };
+                } else {
+                    setState('idle');
+                    if (currentMode === 'proactive' && !isMuted) setTimeout(proactiveLoop, 1000);
+                }
+            } catch (e) {
+                console.error(e);
+                setState('idle');
+                if (currentMode === 'proactive' && !isMuted) setTimeout(proactiveLoop, 2000);
+            }
         }
 
+        // --- PROACTIVE LOOP ---
+        function proactiveLoop() {
+            if (currentMode !== 'proactive' || isMuted) return;
+            if (audioPlayer.paused || audioPlayer.ended) { startListening(); }
+            else { setTimeout(proactiveLoop, 500); }
+        }
+
+        // --- INTERACTION LAYER ---
         const touch = document.getElementById('interaction-layer');
-        touch.onmousedown = startRecord; touch.onmouseup = stopRecord; touch.onmouseleave = stopRecord;
-        touch.ontouchstart = (e) => { startRecord(); }; touch.ontouchend = (e) => { e.preventDefault(); stopRecord(); };
+
+        // Push-to-Talk Mode
+        touch.onmousedown = () => { if (currentMode === 'push') startListening(); };
+        touch.onmouseup = () => { if (currentMode === 'push') stopListening(); };
+        touch.onmouseleave = () => { if (currentMode === 'push') stopListening(); };
+        touch.ontouchstart = (e) => { if (currentMode === 'push') startListening(); else showControls(); };
+        touch.ontouchend = (e) => { e.preventDefault(); if (currentMode === 'push') stopListening(); };
+
+        // Proactive Mode: Tap to show controls
+        touch.onclick = () => { if (currentMode === 'proactive') showControls(); };
+
+        // --- INIT ---
+        applyMode();
     </script>
 </body>
 
