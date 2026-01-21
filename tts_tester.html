@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TTS API Tester | Free Text-to-Speech</title>
+    <meta name="description" content="Free Text-to-Speech API tester using Web Speech API. No API keys required.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="background-effects">
+        <div class="gradient-orb orb-1"></div>
+        <div class="gradient-orb orb-2"></div>
+        <div class="gradient-orb orb-3"></div>
+    </div>
+
+    <div class="container">
+        <header class="header">
+            <div class="logo">
+                <div class="logo-icon">
+                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z" fill="url(#grad1)" opacity="0.2"/>
+                        <path d="M8 9.5V14.5M11 8V16M14 10V14M17 9V15" stroke="url(#grad2)" stroke-width="2" stroke-linecap="round"/>
+                        <defs>
+                            <linearGradient id="grad1" x1="2" y1="2" x2="22" y2="22">
+                                <stop offset="0%" stop-color="#667eea"/>
+                                <stop offset="100%" stop-color="#764ba2"/>
+                            </linearGradient>
+                            <linearGradient id="grad2" x1="8" y1="8" x2="17" y2="16">
+                                <stop offset="0%" stop-color="#667eea"/>
+                                <stop offset="100%" stop-color="#764ba2"/>
+                            </linearGradient>
+                        </defs>
+                    </svg>
+                </div>
+                <h1>TTS Tester</h1>
+            </div>
+            <span class="badge">Free • No API Key</span>
+        </header>
+
+        <main class="main-card">
+            <div class="card-glow"></div>
+            
+            <div class="input-section">
+                <label for="text-input" class="label">
+                    <span class="label-icon">✍️</span>
+                    Enter Text
+                </label>
+                <textarea 
+                    id="text-input" 
+                    class="text-input" 
+                    placeholder="Type or paste text here to convert to speech..."
+                    rows="5"
+                >Hello! Welcome to the free TTS API tester. This uses your browser's built-in speech synthesis capabilities.</textarea>
+                <div class="char-count">
+                    <span id="char-counter">0</span> characters
+                </div>
+            </div>
+
+            <div class="controls-grid">
+                <div class="control-group">
+                    <label for="voice-select" class="label">
+                        <span class="label-icon">🎙️</span>
+                        Voice
+                    </label>
+                    <div class="select-wrapper">
+                        <select id="voice-select" class="select">
+                            <option>Loading voices...</option>
+                        </select>
+                        <div class="select-arrow">▼</div>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <label for="rate-slider" class="label">
+                        <span class="label-icon">⚡</span>
+                        Speed: <span id="rate-value">1.0</span>x
+                    </label>
+                    <input type="range" id="rate-slider" class="slider" min="0.1" max="2" step="0.1" value="1">
+                </div>
+
+                <div class="control-group">
+                    <label for="pitch-slider" class="label">
+                        <span class="label-icon">🎵</span>
+                        Pitch: <span id="pitch-value">1.0</span>
+                    </label>
+                    <input type="range" id="pitch-slider" class="slider" min="0" max="2" step="0.1" value="1">
+                </div>
+
+                <div class="control-group">
+                    <label for="volume-slider" class="label">
+                        <span class="label-icon">🔊</span>
+                        Volume: <span id="volume-value">100</span>%
+                    </label>
+                    <input type="range" id="volume-slider" class="slider" min="0" max="1" step="0.1" value="1">
+                </div>
+            </div>
+
+            <div class="button-group">
+                <button id="speak-btn" class="btn btn-primary">
+                    <span class="btn-icon">▶</span>
+                    <span class="btn-text">Speak</span>
+                </button>
+                <button id="pause-btn" class="btn btn-secondary" disabled>
+                    <span class="btn-icon">⏸</span>
+                    <span class="btn-text">Pause</span>
+                </button>
+                <button id="stop-btn" class="btn btn-danger" disabled>
+                    <span class="btn-icon">⏹</span>
+                    <span class="btn-text">Stop</span>
+                </button>
+            </div>
+
+            <div id="status-bar" class="status-bar">
+                <div class="status-indicator"></div>
+                <span class="status-text">Ready to speak</span>
+            </div>
+
+            <!-- Waveform Visualizer -->
+            <div id="visualizer" class="visualizer hidden">
+                <div class="wave-container">
+                    <div class="wave-bar"></div>
+                    <div class="wave-bar"></div>
+                    <div class="wave-bar"></div>
+                    <div class="wave-bar"></div>
+                    <div class="wave-bar"></div>
+                    <div class="wave-bar"></div>
+                    <div class="wave-bar"></div>
+                    <div class="wave-bar"></div>
+                    <div class="wave-bar"></div>
+                    <div class="wave-bar"></div>
+                </div>
+            </div>
+        </main>
+
+        <section class="info-section">
+            <div class="info-card">
+                <div class="info-icon">🌐</div>
+                <h3>Browser-Based</h3>
+                <p>Uses Web Speech API - works offline!</p>
+            </div>
+            <div class="info-card">
+                <div class="info-icon">🔒</div>
+                <h3>Private</h3>
+                <p>Text never leaves your device</p>
+            </div>
+            <div class="info-card">
+                <div class="info-icon">💰</div>
+                <h3>100% Free</h3>
+                <p>No limits, no API keys needed</p>
+            </div>
+        </section>
+
+        <footer class="footer">
+            <p>Built with ❤️ using the Web Speech API</p>
+        </footer>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

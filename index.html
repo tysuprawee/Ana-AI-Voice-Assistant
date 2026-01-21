@@ -1,164 +1,1030 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TTS API Tester | Free Text-to-Speech</title>
-    <meta name="description" content="Free Text-to-Speech API tester using Web Speech API. No API keys required.">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css">
+    <title>TTS + STT Tester</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0f0f14;
+            color: #fff;
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 2rem;
+            font-size: 0.9rem;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 1.5rem;
+        }
+
+        @media (max-width: 1000px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            padding: 1.5rem;
+        }
+
+        .card.featured {
+            border-color: rgba(102, 126, 234, 0.3);
+            background: rgba(102, 126, 234, 0.05);
+        }
+
+        .card h2 {
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .card h2 .icon {
+            font-size: 1.3rem;
+        }
+
+        label {
+            display: block;
+            font-size: 0.8rem;
+            color: #888;
+            margin-bottom: 0.4rem;
+            margin-top: 1rem;
+        }
+
+        label:first-of-type {
+            margin-top: 0;
+        }
+
+        textarea,
+        select,
+        input[type="file"] {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 0.75rem;
+            color: #fff;
+            font-family: inherit;
+            font-size: 0.95rem;
+            resize: vertical;
+        }
+
+        textarea:focus,
+        select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        select {
+            cursor: pointer;
+        }
+
+        button {
+            width: 100%;
+            padding: 0.875rem;
+            margin-top: 1rem;
+            border: none;
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+
+        .btn-chat {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            font-size: 1.1rem;
+            padding: 1.25rem;
+        }
+
+        .btn-chat:hover:not(:disabled) {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 20px rgba(16, 185, 129, 0.4);
+        }
+
+        .btn-chat.listening {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            animation: pulse 1s infinite;
+        }
+
+        .result-box {
+            margin-top: 1rem;
+            padding: 1rem;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            min-height: 60px;
+        }
+
+        .result-text {
+            font-size: 0.95rem;
+            line-height: 1.5;
+            word-break: break-word;
+        }
+
+        .latency {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.3rem 0.7rem;
+            background: rgba(102, 126, 234, 0.2);
+            border-radius: 20px;
+            font-size: 0.8rem;
+            color: #a5b4fc;
+            margin-top: 0.75rem;
+            margin-right: 0.5rem;
+        }
+
+        .latency.fast {
+            background: rgba(74, 222, 128, 0.2);
+            color: #86efac;
+        }
+
+        .latency.medium {
+            background: rgba(251, 191, 36, 0.2);
+            color: #fcd34d;
+        }
+
+        .latency.slow {
+            background: rgba(248, 113, 113, 0.2);
+            color: #fca5a5;
+        }
+
+        audio {
+            width: 100%;
+            margin-top: 1rem;
+            border-radius: 8px;
+        }
+
+        .status {
+            font-size: 0.85rem;
+            color: #888;
+            margin-top: 0.5rem;
+        }
+
+        .status.loading {
+            color: #667eea;
+        }
+
+        .status.error {
+            color: #f87171;
+        }
+
+        .recording {
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.5;
+            }
+        }
+
+        .record-btn {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+        }
+
+        .record-btn.recording {
+            background: linear-gradient(135deg, #22c55e, #16a34a);
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .file-input-wrapper {
+            position: relative;
+        }
+
+        .file-input-wrapper input[type="file"] {
+            cursor: pointer;
+        }
+
+        .or-divider {
+            text-align: center;
+            color: #555;
+            font-size: 0.8rem;
+            margin: 0.75rem 0;
+        }
+
+        .chat-flow {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            margin: 1rem 0;
+            font-size: 0.85rem;
+            color: #888;
+        }
+
+        .chat-flow .arrow {
+            color: #667eea;
+        }
+
+        .chat-transcript {
+            margin-top: 1rem;
+        }
+
+        .chat-transcript .you,
+        .chat-transcript .ai {
+            padding: 0.75rem;
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
+        }
+
+        .chat-transcript .you {
+            background: rgba(102, 126, 234, 0.15);
+            border-left: 3px solid #667eea;
+        }
+
+        .chat-transcript .ai {
+            background: rgba(16, 185, 129, 0.15);
+            border-left: 3px solid #10b981;
+        }
+
+        .chat-transcript .label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            color: #888;
+            margin-bottom: 0.25rem;
+        }
+
+        .latency-breakdown {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+    </style>
 </head>
+
 <body>
-    <div class="background-effects">
-        <div class="gradient-orb orb-1"></div>
-        <div class="gradient-orb orb-2"></div>
-        <div class="gradient-orb orb-3"></div>
-    </div>
-
     <div class="container">
-        <header class="header">
-            <div class="logo">
-                <div class="logo-icon">
-                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z" fill="url(#grad1)" opacity="0.2"/>
-                        <path d="M8 9.5V14.5M11 8V16M14 10V14M17 9V15" stroke="url(#grad2)" stroke-width="2" stroke-linecap="round"/>
-                        <defs>
-                            <linearGradient id="grad1" x1="2" y1="2" x2="22" y2="22">
-                                <stop offset="0%" stop-color="#667eea"/>
-                                <stop offset="100%" stop-color="#764ba2"/>
-                            </linearGradient>
-                            <linearGradient id="grad2" x1="8" y1="8" x2="17" y2="16">
-                                <stop offset="0%" stop-color="#667eea"/>
-                                <stop offset="100%" stop-color="#764ba2"/>
-                            </linearGradient>
-                        </defs>
-                    </svg>
-                </div>
-                <h1>TTS Tester</h1>
-            </div>
-            <span class="badge">Free • No API Key</span>
-        </header>
+        <h1>🎙️ Voice AI Assistant</h1>
+        <p class="subtitle">Whisper + Gemini AI + Edge-TTS • Free & Unlimited</p>
+        <div
+            style="text-align: center; margin-bottom: 2rem; display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap;">
+            <a href="/avatar"
+                style="display: inline-block; background: linear-gradient(135deg, #8b5cf6, #7c3aed); color: white; padding: 0.75rem 1.5rem; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 0.95rem; transition: all 0.2s; box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3);">
+                🤖 AI Avatar Mode
+            </a>
+            <a href="/tts"
+                style="display: inline-block; background: linear-gradient(135deg, #3b82f6, #2563eb); color: white; padding: 0.75rem 1.5rem; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 0.95rem; transition: all 0.2s;">
+                📢 Full Screen TTS Studio
+            </a>
+            <a href="/dashboard"
+                style="display: inline-block; background: linear-gradient(135deg, #f97316, #ea580c); color: white; padding: 0.75rem 1.5rem; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 0.95rem; transition: all 0.2s;">
+                🎤 Voice Training Dashboard
+            </a>
+        </div>
 
-        <main class="main-card">
-            <div class="card-glow"></div>
-            
-            <div class="input-section">
-                <label for="text-input" class="label">
-                    <span class="label-icon">✍️</span>
-                    Enter Text
-                </label>
-                <textarea 
-                    id="text-input" 
-                    class="text-input" 
-                    placeholder="Type or paste text here to convert to speech..."
-                    rows="5"
-                >Hello! Welcome to the free TTS API tester. This uses your browser's built-in speech synthesis capabilities.</textarea>
-                <div class="char-count">
-                    <span id="char-counter">0</span> characters
-                </div>
-            </div>
+        <div class="grid">
+            <!-- TTS Card -->
+            <div class="card">
+                <h2><span class="icon">📢</span> Text-to-Speech</h2>
 
-            <div class="controls-grid">
-                <div class="control-group">
-                    <label for="voice-select" class="label">
-                        <span class="label-icon">🎙️</span>
-                        Voice
-                    </label>
-                    <div class="select-wrapper">
-                        <select id="voice-select" class="select">
-                            <option>Loading voices...</option>
-                        </select>
-                        <div class="select-arrow">▼</div>
+                <label for="tts-text">Text</label>
+                <textarea id="tts-text" rows="4"
+                    placeholder="Enter text to convert to speech...">Hello! This is a test of the text-to-speech system.</textarea>
+
+                <label for="tts-voice">Voice</label>
+                <select id="tts-voice">
+                    <optgroup label="♬ Edge-TTS (Unlimited)">
+                        <option value="en-US-AriaNeural">🇺🇸 Aria (Female)</option>
+                        <option value="en-US-GuyNeural">🇺🇸 Guy (Male)</option>
+                        <option value="en-US-JennyNeural">🇺🇸 Jenny (Female)</option>
+                        <option value="en-GB-SoniaNeural">🇬🇧 Sonia (Female)</option>
+                        <option value="th-TH-PremwadeeNeural">🇹🇭 Premwadee (Female)</option>
+                        <option value="th-TH-NiwatNeural">🇹🇭 Niwat (Male)</option>
+                        <option value="ja-JP-NanamiNeural">🇯🇵 Nanami (Female)</option>
+                        <option value="ko-KR-SunHiNeural">🇰🇷 SunHi (Female)</option>
+                        <option value="zh-CN-XiaoxiaoNeural">🇨🇳 Xiaoxiao (Female)</option>
+                    </optgroup>
+                    <optgroup label="🌐 Google TTS (Free)">
+                        <option value="google:en">🇺🇸 English (Google)</option>
+                        <option value="google:th">🇹🇭 Thai (Google)</option>
+                        <option value="google:zh-CN">🇨🇳 Chinese (Google)</option>
+                        <option value="google:ja">🇯🇵 Japanese (Google)</option>
+                        <option value="google:ko">🇰🇷 Korean (Google)</option>
+                    </optgroup>
+                    <optgroup label="🌟 Google Cloud (High Quality)">
+                        <option value="googlecloud:th-TH-Neural2-C">🇹🇭 Thai Neural (Female)</option>
+                        <option value="googlecloud:th-TH-Standard-A">🇹🇭 Thai Standard (Female)</option>
+                        <option value="googlecloud:en-US-Neural2-F">🇺🇸 US English Neural (Female)</option>
+                        <option value="googlecloud:en-US-Neural2-D">🇺🇸 US English Neural (Male)</option>
+                    </optgroup>
+                    </optgroup>
+                    <optgroup id="tts-fish-voices" label="🎤 My Cloned Voices (Fish Audio)">
+                    </optgroup>
+                </select>
+
+                <!-- Prosody Controls -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem;">
+                    <div>
+                        <label for="tts-rate">Speed: <span id="tts-rate-value">0%</span></label>
+                        <input type="range" id="tts-rate" min="-50" max="50" value="0"
+                            style="width: 100%; accent-color: #f97316;">
+                    </div>
+                    <div>
+                        <label for="tts-pitch">Pitch: <span id="tts-pitch-value">0Hz</span></label>
+                        <input type="range" id="tts-pitch" min="-20" max="20" value="0"
+                            style="width: 100%; accent-color: #f97316;">
                     </div>
                 </div>
 
-                <div class="control-group">
-                    <label for="rate-slider" class="label">
-                        <span class="label-icon">⚡</span>
-                        Speed: <span id="rate-value">1.0</span>x
+                <!-- Natural Pauses Toggle -->
+                <div style="margin-top: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                    <input type="checkbox" id="tts-pauses" style="width: 18px; height: 18px; accent-color: #f97316;">
+                    <label for="tts-pauses" style="margin: 0; cursor: pointer;">
+                        ⏸️ Natural Pauses (Thai word breaks)
                     </label>
-                    <input type="range" id="rate-slider" class="slider" min="0.1" max="2" step="0.1" value="1">
                 </div>
 
-                <div class="control-group">
-                    <label for="pitch-slider" class="label">
-                        <span class="label-icon">🎵</span>
-                        Pitch: <span id="pitch-value">1.0</span>
+                <!-- Warmth Toggle -->
+                <div style="margin-top: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
+                    <input type="checkbox" id="tts-warmth" style="width: 18px; height: 18px; accent-color: #f97316;">
+                    <label for="tts-warmth" style="margin: 0; cursor: pointer;">
+                        🎵 Warm Audio (bass boost, softer tone)
                     </label>
-                    <input type="range" id="pitch-slider" class="slider" min="0" max="2" step="0.1" value="1">
                 </div>
 
-                <div class="control-group">
-                    <label for="volume-slider" class="label">
-                        <span class="label-icon">🔊</span>
-                        Volume: <span id="volume-value">100</span>%
-                    </label>
-                    <input type="range" id="volume-slider" class="slider" min="0" max="1" step="0.1" value="1">
+                <button id="tts-btn" class="btn-primary">▶ Generate Speech</button>
+
+                <!-- Progress Bar -->
+                <div id="tts-progress" class="hidden" style="margin-top: 0.5rem;">
+                    <div style="background: rgba(255,255,255,0.1); border-radius: 4px; height: 8px; overflow: hidden;">
+                        <div id="tts-progress-bar"
+                            style="width: 0%; height: 100%; background: linear-gradient(90deg, #f97316, #ea580c); transition: width 0.3s;">
+                        </div>
+                    </div>
+                    <div id="tts-progress-text" style="font-size: 0.8rem; margin-top: 0.25rem; color: #888;">0%</div>
+                </div>
+
+                <div id="tts-status" class="status"></div>
+
+                <audio id="tts-audio" controls class="hidden"></audio>
+
+                <div id="tts-latency" class="latency hidden">
+                    <span>⚡</span> <span id="tts-latency-value">0</span> ms
                 </div>
             </div>
 
-            <div class="button-group">
-                <button id="speak-btn" class="btn btn-primary">
-                    <span class="btn-icon">▶</span>
-                    <span class="btn-text">Speak</span>
-                </button>
-                <button id="pause-btn" class="btn btn-secondary" disabled>
-                    <span class="btn-icon">⏸</span>
-                    <span class="btn-text">Pause</span>
-                </button>
-                <button id="stop-btn" class="btn btn-danger" disabled>
-                    <span class="btn-icon">⏹</span>
-                    <span class="btn-text">Stop</span>
-                </button>
-            </div>
+            <!-- Voice Chat Card -->
+            <div class="card featured">
+                <h2><span class="icon">💬</span> Voice Chat</h2>
 
-            <div id="status-bar" class="status-bar">
-                <div class="status-indicator"></div>
-                <span class="status-text">Ready to speak</span>
-            </div>
+                <div class="chat-flow">
+                    <span>🎤 Mic</span>
+                    <span class="arrow">→</span>
+                    <span>📝 STT</span>
+                    <span class="arrow">→</span>
+                    <span>🔍 Search</span>
+                    <span class="arrow">→</span>
+                    <span>🤖 AI</span>
+                    <span class="arrow">→</span>
+                    <span>🔊 TTS</span>
+                </div>
 
-            <!-- Waveform Visualizer -->
-            <div id="visualizer" class="visualizer hidden">
-                <div class="wave-container">
-                    <div class="wave-bar"></div>
-                    <div class="wave-bar"></div>
-                    <div class="wave-bar"></div>
-                    <div class="wave-bar"></div>
-                    <div class="wave-bar"></div>
-                    <div class="wave-bar"></div>
-                    <div class="wave-bar"></div>
-                    <div class="wave-bar"></div>
-                    <div class="wave-bar"></div>
-                    <div class="wave-bar"></div>
+                <label for="chat-voice">Response Voice</label>
+                <select id="chat-voice">
+                    <optgroup label="♬ Edge-TTS (Unlimited)">
+                        <option value="en-US-AriaNeural">🇺🇸 Aria (Female)</option>
+                        <option value="en-US-GuyNeural">🇺🇸 Guy (Male)</option>
+                        <option value="th-TH-PremwadeeNeural">🇹🇭 Premwadee (Female)</option>
+                        <option value="th-TH-NiwatNeural">🇹🇭 Niwat (Male)</option>
+                        <option value="ja-JP-NanamiNeural">🇯🇵 Nanami (Female)</option>
+                    </optgroup>
+                    <optgroup label="🌐 Google TTS (Free)">
+                        <option value="google:en">🇺🇸 English (Google)</option>
+                        <option value="google:th">🇹🇭 Thai (Google)</option>
+                    </optgroup>
+                    <optgroup label="🌟 Google Cloud (High Quality)">
+                        <option value="googlecloud:th-TH-Neural2-C">🇹🇭 Neural (Female)</option>
+                        <option value="googlecloud:th-TH-Standard-A">🇹🇭 Standard (Female)</option>
+                    </optgroup>
+                    <optgroup id="chat-fish-voices" label="🎤 My Cloned Voices (Fish Audio)">
+                    </optgroup>
+                </select>
+
+                <label for="chat-lang">Language</label>
+                <select id="chat-lang">
+                    <option value="auto">Auto-detect</option>
+                    <option value="en">English</option>
+                    <option value="th">Thai</option>
+                    <option value="ja">Japanese</option>
+                    <option value="ko">Korean</option>
+                </select>
+
+                <button id="chat-btn" class="btn-chat">🎤 Hold to Talk</button>
+
+                <div id="chat-status" class="status"></div>
+
+                <div id="chat-transcript" class="chat-transcript hidden">
+                    <div class="you">
+                        <div class="label">You said:</div>
+                        <div id="chat-you-text"></div>
+                    </div>
+                    <div class="ai">
+                        <div class="label">🤖 AI Response:</div>
+                        <div id="chat-ai-text"></div>
+                    </div>
+                </div>
+
+                <audio id="chat-audio" class="hidden"></audio>
+
+                <div id="chat-latencies" class="latency-breakdown hidden">
+                    <div class="latency" id="chat-stt-latency">
+                        <span>📝 STT:</span> <span id="chat-stt-ms">0</span> ms
+                    </div>
+                    <div class="latency hidden" id="chat-search-latency">
+                        <span>🔍 Search:</span> <span id="chat-search-ms">0</span> ms
+                    </div>
+                    <div class="latency" id="chat-ai-latency">
+                        <span>🤖 AI:</span> <span id="chat-ai-ms">0</span> ms
+                    </div>
+                    <div class="latency" id="chat-tts-latency">
+                        <span>🔊 TTS:</span> <span id="chat-tts-ms">0</span> ms
+                    </div>
+                    <div class="latency" id="chat-total-latency">
+                        <span>⚡ Total:</span> <span id="chat-total-ms">0</span> ms
+                    </div>
                 </div>
             </div>
-        </main>
 
-        <section class="info-section">
-            <div class="info-card">
-                <div class="info-icon">🌐</div>
-                <h3>Browser-Based</h3>
-                <p>Uses Web Speech API - works offline!</p>
-            </div>
-            <div class="info-card">
-                <div class="info-icon">🔒</div>
-                <h3>Private</h3>
-                <p>Text never leaves your device</p>
-            </div>
-            <div class="info-card">
-                <div class="info-icon">💰</div>
-                <h3>100% Free</h3>
-                <p>No limits, no API keys needed</p>
-            </div>
-        </section>
+            <!-- STT Card -->
+            <div class="card">
+                <h2><span class="icon">🎤</span> Speech-to-Text</h2>
 
-        <footer class="footer">
-            <p>Built with ❤️ using the Web Speech API</p>
-        </footer>
+                <label>Upload Audio</label>
+                <div class="file-input-wrapper">
+                    <input type="file" id="stt-file" accept="audio/*">
+                </div>
+
+                <div class="or-divider">— or —</div>
+
+                <button id="record-btn" class="btn-secondary record-btn">🎙️ Record Audio</button>
+
+                <label for="stt-lang">Language (optional)</label>
+                <select id="stt-lang">
+                    <option value="auto">Auto-detect</option>
+                    <option value="en">English</option>
+                    <option value="th">Thai</option>
+                    <option value="ja">Japanese</option>
+                    <option value="ko">Korean</option>
+                    <option value="zh">Chinese</option>
+                </select>
+
+                <button id="stt-btn" class="btn-primary">📝 Transcribe</button>
+
+                <div id="stt-status" class="status"></div>
+
+                <div id="stt-result" class="result-box hidden">
+                    <div class="result-text" id="stt-text"></div>
+                    <div id="stt-latency" class="latency">
+                        <span>⚡</span> <span id="stt-latency-value">0</span> ms
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <script src="app.js"></script>
+    <script>
+        const API_BASE = '';
+
+        // TTS Elements
+        const ttsText = document.getElementById('tts-text');
+        const ttsVoice = document.getElementById('tts-voice');
+        const ttsBtn = document.getElementById('tts-btn');
+        const ttsStatus = document.getElementById('tts-status');
+        const ttsAudio = document.getElementById('tts-audio');
+        const ttsLatency = document.getElementById('tts-latency');
+        const ttsLatencyValue = document.getElementById('tts-latency-value');
+
+        // STT Elements
+        const sttFile = document.getElementById('stt-file');
+        const sttLang = document.getElementById('stt-lang');
+        const sttBtn = document.getElementById('stt-btn');
+        const sttStatus = document.getElementById('stt-status');
+        const sttResult = document.getElementById('stt-result');
+        const sttText = document.getElementById('stt-text');
+        const sttLatency = document.getElementById('stt-latency');
+        const sttLatencyValue = document.getElementById('stt-latency-value');
+        const recordBtn = document.getElementById('record-btn');
+
+        // Voice Chat Elements
+        const chatVoice = document.getElementById('chat-voice');
+        const chatLang = document.getElementById('chat-lang');
+        const chatBtn = document.getElementById('chat-btn');
+        const chatStatus = document.getElementById('chat-status');
+        const chatTranscript = document.getElementById('chat-transcript');
+        const chatYouText = document.getElementById('chat-you-text');
+        const chatAiText = document.getElementById('chat-ai-text');
+        const chatAudio = document.getElementById('chat-audio');
+        const chatLatencies = document.getElementById('chat-latencies');
+        const chatSttMs = document.getElementById('chat-stt-ms');
+        const chatSearchMs = document.getElementById('chat-search-ms');
+        const chatSearchLatency = document.getElementById('chat-search-latency');
+        const chatAiMs = document.getElementById('chat-ai-ms');
+        const chatTtsMs = document.getElementById('chat-tts-ms');
+        const chatTotalMs = document.getElementById('chat-total-ms');
+
+        // Recording state
+        let mediaRecorder = null;
+        let audioChunks = [];
+        let isRecording = false;
+        let recordedBlob = null;
+
+        // Voice Chat state
+        let chatMediaRecorder = null;
+        let chatAudioChunks = [];
+        let isChatRecording = false;
+
+        // Load Fish Audio cloned voices
+        async function loadFishVoices() {
+            try {
+                const res = await fetch(`${API_BASE}/api/voice/list`);
+                const data = await res.json();
+
+                if (data.success && data.voices && data.voices.length > 0) {
+                    const ttsFishGroup = document.getElementById('tts-fish-voices');
+                    const chatFishGroup = document.getElementById('chat-fish-voices');
+
+                    data.voices.forEach(voice => {
+                        const option1 = document.createElement('option');
+                        option1.value = `fish:${voice.id}`;
+                        option1.textContent = `🎤 ${voice.title}`;
+                        ttsFishGroup.appendChild(option1);
+
+                        const option2 = document.createElement('option');
+                        option2.value = `fish:${voice.id}`;
+                        option2.textContent = `🎤 ${voice.title}`;
+                        chatFishGroup.appendChild(option2);
+                    });
+                }
+            } catch (err) {
+                console.log('No Fish Audio voices found');
+            }
+        }
+
+        // Load voices on page load
+        loadFishVoices();
+
+        // Prosody sliders
+        const ttsRate = document.getElementById('tts-rate');
+        const ttsPitch = document.getElementById('tts-pitch');
+        const ttsRateValue = document.getElementById('tts-rate-value');
+        const ttsPitchValue = document.getElementById('tts-pitch-value');
+
+        ttsRate.addEventListener('input', () => {
+            const val = ttsRate.value;
+            ttsRateValue.textContent = val >= 0 ? `+${val}%` : `${val}%`;
+        });
+
+        ttsPitch.addEventListener('input', () => {
+            const val = ttsPitch.value;
+            ttsPitchValue.textContent = val >= 0 ? `+${val}Hz` : `${val}Hz`;
+        });
+
+        // TTS Handler
+        ttsBtn.addEventListener('click', async () => {
+            const text = ttsText.value.trim();
+            if (!text) {
+                ttsStatus.textContent = '⚠️ Please enter some text';
+                ttsStatus.className = 'status error';
+                return;
+            }
+
+            ttsBtn.disabled = true;
+            ttsStatus.textContent = '⏳ Generating speech...';
+            ttsStatus.className = 'status loading';
+            ttsAudio.classList.add('hidden');
+            ttsLatency.classList.add('hidden');
+
+            // Show progress bar
+            const progressDiv = document.getElementById('tts-progress');
+            const progressBar = document.getElementById('tts-progress-bar');
+            const progressText = document.getElementById('tts-progress-text');
+            progressDiv.classList.remove('hidden');
+            progressBar.style.width = '0%';
+            progressText.textContent = '0%';
+
+            // Simulate progress animation
+            let progress = 0;
+            const progressInterval = setInterval(() => {
+                if (progress < 90) {
+                    progress += Math.random() * 15;
+                    progress = Math.min(progress, 90);
+                    progressBar.style.width = `${progress}%`;
+                    progressText.textContent = `${Math.round(progress)}%`;
+                }
+            }, 200);
+
+            // Get prosody settings
+            const rateVal = ttsRate.value;
+            const pitchVal = ttsPitch.value;
+            const rate = rateVal >= 0 ? `+${rateVal}%` : `${rateVal}%`;
+            const pitch = pitchVal >= 0 ? `+${pitchVal}Hz` : `${pitchVal}Hz`;
+            const pauses = document.getElementById('tts-pauses').checked;
+            const warmth = document.getElementById('tts-warmth').checked;
+
+            try {
+                const res = await fetch(`${API_BASE}/api/tts`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        text: text,
+                        voice: ttsVoice.value,
+                        rate: rate,
+                        pitch: pitch,
+                        pauses: pauses,
+                        warmth: warmth
+                    })
+                });
+
+                clearInterval(progressInterval);
+                progressBar.style.width = '100%';
+                progressText.textContent = '100%';
+
+                const data = await res.json();
+
+                if (data.success) {
+                    ttsAudio.src = data.audio_url;
+                    ttsAudio.classList.remove('hidden');
+                    ttsAudio.play();
+
+                    ttsLatencyValue.textContent = data.latency_ms;
+                    ttsLatency.className = `latency ${getLatencyClass(data.latency_ms)}`;
+                    ttsLatency.classList.remove('hidden');
+
+                    ttsStatus.textContent = '✅ Generated successfully';
+                    ttsStatus.className = 'status';
+                } else {
+                    throw new Error(data.error);
+                }
+            } catch (err) {
+                clearInterval(progressInterval);
+                ttsStatus.textContent = `❌ Error: ${err.message}`;
+                ttsStatus.className = 'status error';
+            } finally {
+                ttsBtn.disabled = false;
+                setTimeout(() => progressDiv.classList.add('hidden'), 1000);
+            }
+        });
+
+        // STT Handler
+        sttBtn.addEventListener('click', async () => {
+            const file = sttFile.files[0] || recordedBlob;
+
+            if (!file) {
+                sttStatus.textContent = '⚠️ Please upload or record audio';
+                sttStatus.className = 'status error';
+                return;
+            }
+
+            sttBtn.disabled = true;
+            sttStatus.textContent = '⏳ Transcribing...';
+            sttStatus.className = 'status loading';
+            sttResult.classList.add('hidden');
+
+            try {
+                const formData = new FormData();
+                formData.append('audio', file);
+                formData.append('language', sttLang.value);
+
+                const res = await fetch(`${API_BASE}/api/stt`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await res.json();
+
+                if (data.success) {
+                    sttText.textContent = data.text || '(No speech detected)';
+                    sttLatencyValue.textContent = data.latency_ms;
+                    sttLatency.className = `latency ${getLatencyClass(data.latency_ms)}`;
+                    sttResult.classList.remove('hidden');
+
+                    sttStatus.textContent = `✅ Detected: ${data.language.toUpperCase()}`;
+                    sttStatus.className = 'status';
+                } else {
+                    throw new Error(data.error);
+                }
+            } catch (err) {
+                sttStatus.textContent = `❌ Error: ${err.message}`;
+                sttStatus.className = 'status error';
+            } finally {
+                sttBtn.disabled = false;
+            }
+        });
+
+        // Recording Handler
+        recordBtn.addEventListener('click', async () => {
+            if (!isRecording) {
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                    mediaRecorder = new MediaRecorder(stream);
+                    audioChunks = [];
+
+                    mediaRecorder.ondataavailable = (e) => {
+                        audioChunks.push(e.data);
+                    };
+
+                    mediaRecorder.onstop = () => {
+                        recordedBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                        sttStatus.textContent = '🎙️ Recording saved - click Transcribe';
+                        sttStatus.className = 'status';
+                        stream.getTracks().forEach(track => track.stop());
+                    };
+
+                    mediaRecorder.start();
+                    isRecording = true;
+                    recordBtn.textContent = '⏹️ Stop Recording';
+                    recordBtn.classList.add('recording');
+                    sttStatus.textContent = '🔴 Recording...';
+                    sttStatus.className = 'status loading recording';
+                } catch (err) {
+                    sttStatus.textContent = `❌ Microphone error: ${err.message}`;
+                    sttStatus.className = 'status error';
+                }
+            } else {
+                mediaRecorder.stop();
+                isRecording = false;
+                recordBtn.textContent = '🎙️ Record Audio';
+                recordBtn.classList.remove('recording');
+            }
+        });
+
+        // Voice Chat Handler
+        chatBtn.addEventListener('mousedown', startChatRecording);
+        chatBtn.addEventListener('mouseup', stopChatRecording);
+        chatBtn.addEventListener('mouseleave', stopChatRecording);
+        chatBtn.addEventListener('touchstart', (e) => { e.preventDefault(); startChatRecording(); });
+        chatBtn.addEventListener('touchend', stopChatRecording);
+
+        // --- WEB SPEECH API IMPLEMENTATION (FAST for Vercel) ---
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        let recognition = null;
+
+        if (SpeechRecognition) {
+            recognition = new SpeechRecognition();
+            recognition.continuous = false;
+            recognition.interimResults = false;
+            recognition.lang = 'en-US';
+
+            recognition.onstart = () => {
+                chatStatus.textContent = '🎤 Listening (Web Speech)...';
+                chatStatus.className = 'status';
+            };
+
+            recognition.onresult = (event) => {
+                const text = event.results[0][0].transcript;
+                console.log('🗣️ Heard:', text);
+                processTextChat(text);
+            };
+
+            recognition.onerror = (event) => {
+                console.error('Speech error:', event.error);
+                if (event.error === 'not-allowed') {
+                    chatStatus.textContent = '❌ Mic permission denied';
+                    chatStatus.className = 'status error';
+                }
+            };
+
+            recognition.onend = () => {
+                if (chatBtn.classList.contains('listening')) {
+                    chatBtn.classList.remove('listening');
+                    chatBtn.textContent = '🎤 Hold to Talk';
+                }
+            };
+        }
+
+        // Modified Start Function
+        async function startChatRecording() {
+            if (isChatRecording) return;
+
+            // Prefer Web Speech API for Vercel speed
+            if (recognition) {
+                try {
+                    recognition.lang = chatLang.value === 'auto' ? 'en-US' : chatLang.value;
+                    recognition.start();
+                    chatBtn.classList.add('listening');
+                    chatBtn.textContent = '🛑 Listening...';
+                    return;
+                } catch (e) {
+                    console.error("Web Speech API failed, fallback", e);
+                }
+            }
+
+            // Fallback to MediaRecorder
+            try {
+                chatStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                chatMediaRecorder = new MediaRecorder(chatStream);
+                chatChunks = [];
+
+                chatMediaRecorder.ondataavailable = (e) => {
+                    if (e.data.size > 0) chatChunks.push(e.data);
+                };
+
+                chatMediaRecorder.onstop = () => {
+                    const blob = new Blob(chatChunks, { type: 'audio/webm' });
+                    chatStream.getTracks().forEach(track => track.stop());
+                    processVoiceChat(blob);
+                };
+
+                chatMediaRecorder.start();
+                isChatRecording = true;
+                chatBtn.classList.add('listening');
+                chatBtn.textContent = '🛑 Recording...';
+                chatStatus.textContent = '🔴 Recording audio...';
+                chatStatus.className = 'status';
+
+            } catch (err) {
+                chatStatus.textContent = `❌ Microphone error: ${err.message}`;
+                chatStatus.className = 'status error';
+            }
+        }
+
+        function stopChatRecording() {
+            // If using Web Speech API
+            if (recognition && chatBtn.textContent.includes('Listening')) {
+                recognition.stop();
+                chatBtn.classList.remove('listening');
+                chatBtn.textContent = '🎤 Hold to Talk';
+                return;
+            }
+
+            // If using MediaRecorder
+            if (!isChatRecording || !chatMediaRecorder) return;
+            chatMediaRecorder.stop();
+            isChatRecording = false;
+            chatBtn.textContent = '🎤 Hold to Talk';
+            chatBtn.classList.remove('listening');
+        }
+
+        // Process Text Chat (bypass server STT)
+        async function processTextChat(text) {
+            chatBtn.disabled = true;
+            chatStatus.textContent = '⏳ Processing...';
+            chatStatus.className = 'status loading';
+            chatTranscript.classList.add('hidden');
+            chatLatencies.classList.add('hidden');
+
+            try {
+                const res = await fetch(`${API_BASE}/api/text-chat`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        text: text,
+                        language: chatLang.value,
+                        voice: chatVoice.value
+                    })
+                });
+                const data = await res.json();
+
+                if (!data.success) throw new Error(data.error || 'Text chat failed');
+                updateChatUI(data, 0);
+
+            } catch (err) {
+                chatStatus.textContent = `❌ Error: ${err.message}`;
+                chatStatus.className = 'status error';
+            } finally {
+                chatBtn.disabled = false;
+            }
+        }
+
+        // Helper
+        function updateChatUI(data, sttLatency) {
+            chatYouText.textContent = data.user_text;
+            chatAiText.textContent = data.ai_response;
+            chatTranscript.classList.remove('hidden');
+
+            const latencies = data.latencies || {};
+            latencies.stt = sttLatency;
+
+            chatSttMs.textContent = latencies.stt || 0;
+            chatAiMs.textContent = latencies.ai || 0;
+            chatTtsMs.textContent = latencies.tts || 0;
+            chatTotalMs.textContent = latencies.total || 0;
+
+            if (latencies.search) {
+                chatSearchMs.textContent = latencies.search;
+                chatSearchLatency.classList.remove('hidden');
+                chatSearchLatency.className = `latency ${getLatencyClass(latencies.search)}`;
+            } else {
+                chatSearchLatency.classList.add('hidden');
+            }
+
+            chatLatencies.classList.remove('hidden');
+
+            if (data.audio_url) {
+                chatAudio.src = data.audio_url;
+                chatAudio.play();
+            }
+
+            chatStatus.textContent = `✅ Complete!`;
+            chatStatus.className = 'status';
+        }
+
+        // KEEP EXISTING processVoiceChat
+        async function processVoiceChat(audioBlob) {
+            chatBtn.disabled = true;
+            chatStatus.textContent = '⏳ Uploading & Processing...';
+            chatTranscript.classList.add('hidden');
+
+            try {
+                const formData = new FormData();
+                formData.append('audio', audioBlob, 'recording.webm');
+                formData.append('language', chatLang.value);
+                formData.append('voice', chatVoice.value);
+
+                const res = await fetch(`${API_BASE}/api/voice-chat`, { method: 'POST', body: formData });
+                const data = await res.json();
+
+                if (!data.success) throw new Error(data.error);
+                updateChatUI(data, data.latencies.stt);
+
+            } catch (err) {
+                chatStatus.textContent = `❌ Error: ${err.message}`;
+            } finally {
+                chatBtn.disabled = false;
+            }
+        }
+
+        // Clear recorded blob when file is selected
+        sttFile.addEventListener('change', () => {
+            recordedBlob = null;
+        });
+
+        // Helper function for latency colors
+        function getLatencyClass(ms) {
+            if (ms < 1000) return 'fast';
+            if (ms < 3000) return 'medium';
+            return 'slow';
+        }
+    </script>
 </body>
+
 </html>
