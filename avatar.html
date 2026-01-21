@@ -1210,30 +1210,7 @@
                 const data = await res.json();
 
                 if (data.success) {
-                    console.log('✅ Ana:', data.ai_response);
-                    setEmotion(data.emotion);
-                    audioPlayer.src = data.audio_url;
-                    setState('speaking');
-
-                    audioPlayer.onended = () => {
-                        setState('idle');
-                        setEmotion('neutral');
-                        isProcessing = false;
-                        if (currentMode === 'proactive' && !isMuted) {
-                            setTimeout(proactiveLoop, VAD_CONFIG.RESTART_DELAY_SUCCESS);
-                        }
-                    };
-
-                    audioPlayer.onerror = () => {
-                        console.error('Audio playback error');
-                        setState('idle');
-                        isProcessing = false;
-                        if (currentMode === 'proactive' && !isMuted) {
-                            setTimeout(proactiveLoop, VAD_CONFIG.RESTART_DELAY_ERROR);
-                        }
-                    };
-
-                    await audioPlayer.play();
+                    handleAIResponse(data);
                 } else {
                     console.log('❌ No speech detected');
                     setState('idle');
@@ -1249,6 +1226,50 @@
                 if (currentMode === 'proactive' && !isMuted) {
                     setTimeout(proactiveLoop, VAD_CONFIG.RESTART_DELAY_ERROR);
                 }
+            }
+        }
+
+        // Shared Response Handler
+        async function handleAIResponse(data) {
+            console.log('✅ Ana:', data.ai_response);
+            setEmotion(data.emotion);
+            audioPlayer.src = data.audio_url;
+            setState('speaking');
+
+            // Set up event listeners for this playback
+            const onEnded = () => {
+                setState('idle');
+                setEmotion('neutral');
+                isProcessing = false;
+                cleanup();
+                if (currentMode === 'proactive' && !isMuted) {
+                    setTimeout(proactiveLoop, VAD_CONFIG.RESTART_DELAY_SUCCESS);
+                }
+            };
+
+            const onError = () => {
+                console.error('Audio playback error');
+                setState('idle');
+                isProcessing = false;
+                cleanup();
+                if (currentMode === 'proactive' && !isMuted) {
+                    setTimeout(proactiveLoop, VAD_CONFIG.RESTART_DELAY_ERROR);
+                }
+            };
+
+            const cleanup = () => {
+                audioPlayer.removeEventListener('ended', onEnded);
+                audioPlayer.removeEventListener('error', onError);
+            };
+
+            audioPlayer.addEventListener('ended', onEnded);
+            audioPlayer.addEventListener('error', onError);
+
+            try {
+                await audioPlayer.play();
+            } catch (e) {
+                console.error("Playback failed start", e);
+                onError();
             }
         }
 
