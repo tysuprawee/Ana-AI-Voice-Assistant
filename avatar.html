@@ -884,83 +884,118 @@
             }
         }, 3000);
 
-        // --- WEB SPEECH API (Browser-based STT) ---
-        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-        let recognition = null;
-        let recognizedText = '';
+        // --- AUDIO RECORDING (Server-side STT with Vosk) ---
+        let mediaRecorder = null;
+        let audioChunks = [];
+        let audioStream = null;
+        let isProcessing = false;
+        let silenceTimer = null;
+        let audioContext = null;
+        let analyser = null;
 
-        if (SpeechRecognition) {
-            recognition = new SpeechRecognition();
-            recognition.continuous = false;
-            recognition.interimResults = false;
-            recognition.lang = 'en-US'; // Will auto-detect Thai too
-
-            recognition.onresult = (event) => {
-                recognizedText = event.results[0][0].transcript;
-                console.log('Heard:', recognizedText);
-                setState('thinking');
-                processText(recognizedText);
-            };
-
-            recognition.onerror = (event) => {
-                console.error('Speech error:', event.error);
-                setState('idle');
-                if (currentMode === 'proactive' && !isMuted) setTimeout(proactiveLoop, 1000);
-            };
-
-            recognition.onend = () => {
-                // If no result and proactive, restart
-                if (avatar.classList.contains('listening')) {
-                    setState('idle');
-                    if (currentMode === 'proactive' && !isMuted) setTimeout(proactiveLoop, 500);
-                }
-            };
-        } else {
-            console.warn('Web Speech API not supported');
-        }
-
-        let isProcessing = false; // Prevent overlapping calls
-
-        function startListening() {
-            if (isMuted || !recognition || isProcessing) return;
+        async function startListening() {
+            if (isMuted || isProcessing) return;
             if (!settingsOverlay.classList.contains('hidden') || !passwordModal.classList.contains('hidden')) return;
             if (avatar.classList.contains('speaking') || avatar.classList.contains('listening')) return;
 
             try {
-                recognition.start();
+                audioStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                mediaRecorder = new MediaRecorder(audioStream);
+                audioChunks = [];
+
+                mediaRecorder.ondataavailable = (e) => {
+                    if (e.data.size > 0) audioChunks.push(e.data);
+                };
+
+                mediaRecorder.onstop = async () => {
+                    audioStream.getTracks().forEach(t => t.stop());
+                    if (audioContext) { audioContext.close(); audioContext = null; }
+
+                    const blob = new Blob(audioChunks, { type: 'audio/webm' });
+                    if (blob.size > 1000) { // Only process if there's actual audio
+                        processAudio(blob);
+                    } else {
+                        setState('idle');
+                        if (currentMode === 'proactive' && !isMuted) setTimeout(proactiveLoop, 1500);
+                    }
+                };
+
+                mediaRecorder.start();
                 setState('listening');
-                console.log('🎤 Started listening...');
+                console.log('🎤 Recording started...');
+
+                // Start silence detection for auto-stop
+                startSilenceDetection(audioStream);
+
             } catch (e) {
-                console.error('Start error:', e);
+                console.error('Mic error:', e);
                 setState('idle');
                 if (currentMode === 'proactive' && !isMuted) setTimeout(proactiveLoop, 2000);
             }
         }
 
         function stopListening() {
-            if (recognition) {
-                try { recognition.stop(); } catch (e) { }
+            clearTimeout(silenceTimer);
+            silenceTimer = null;
+            if (mediaRecorder && mediaRecorder.state === 'recording') {
+                mediaRecorder.stop();
+                setState('thinking');
+                console.log('🛑 Recording stopped');
             }
         }
 
-        async function processText(text) {
-            if (!text || isProcessing) {
-                setState('idle');
-                if (currentMode === 'proactive' && !isMuted) setTimeout(proactiveLoop, 1500);
-                return;
+        // Silence detection for auto-stop
+        function startSilenceDetection(stream) {
+            audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            analyser = audioContext.createAnalyser();
+            const source = audioContext.createMediaStreamSource(stream);
+            source.connect(analyser);
+            analyser.fftSize = 256;
+            const dataArray = new Uint8Array(analyser.frequencyBinCount);
+
+            function checkVolume() {
+                if (!mediaRecorder || mediaRecorder.state !== 'recording') return;
+
+                analyser.getByteFrequencyData(dataArray);
+                const avg = dataArray.reduce((a, b) => a + b, 0) / dataArray.length;
+
+                // Below threshold = silence
+                if (avg < 10) {
+                    if (!silenceTimer) {
+                        silenceTimer = setTimeout(() => {
+                            console.log('🔇 Silence detected, stopping...');
+                            stopListening();
+                        }, 1500); // 1.5 sec of silence = stop
+                    }
+                } else {
+                    clearTimeout(silenceTimer);
+                    silenceTimer = null;
+                }
+
+                requestAnimationFrame(checkVolume);
             }
 
+            checkVolume();
+        }
+
+        async function processAudio(blob) {
+            if (isProcessing) return;
             isProcessing = true;
 
             try {
-                const res = await fetch(`${API_BASE}/api/text-chat`, {
+                const formData = new FormData();
+                formData.append('audio', blob, 'recording.webm');
+                formData.append('language', 'auto');
+                formData.append('voice', 'auto');
+
+                const res = await fetch(`${API_BASE}/api/voice-chat`, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ text: text, voice: 'auto', language: 'auto' })
+                    body: formData
                 });
                 const data = await res.json();
 
                 if (data.success) {
+                    console.log('✅ Ana:', data.ai_response);
                     setEmotion(data.emotion);
                     audioPlayer.src = data.audio_url;
                     setState('speaking');
@@ -969,7 +1004,6 @@
                         setState('idle');
                         setEmotion('neutral');
                         isProcessing = false;
-                        // Longer delay before next listen in proactive mode
                         if (currentMode === 'proactive' && !isMuted) setTimeout(proactiveLoop, 1500);
                     };
 
@@ -982,6 +1016,7 @@
 
                     await audioPlayer.play();
                 } else {
+                    console.log('❌ Error:', data.error);
                     setState('idle');
                     isProcessing = false;
                     if (currentMode === 'proactive' && !isMuted) setTimeout(proactiveLoop, 2000);
@@ -998,7 +1033,6 @@
         function proactiveLoop() {
             if (currentMode !== 'proactive' || isMuted || isProcessing) return;
             if (!audioPlayer.paused && !audioPlayer.ended) {
-                // Audio still playing, wait
                 setTimeout(proactiveLoop, 1000);
                 return;
             }
@@ -1008,7 +1042,7 @@
         // --- INTERACTION LAYER ---
         const touch = document.getElementById('interaction-layer');
 
-        // TAP-to-Talk Mode (changed from hold - better for Pi)
+        // TAP-to-Talk Mode
         touch.onclick = (e) => {
             if (currentMode === 'push') {
                 if (!avatar.classList.contains('listening') && !avatar.classList.contains('speaking')) {

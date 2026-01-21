@@ -27,8 +27,35 @@ try:
     WHISPER_AVAILABLE = True
 except ImportError:
     WHISPER_AVAILABLE = False
-    print("⚠️  Whisper not installed. /api/voice-chat will be unavailable.")
-    print("   Use /api/text-chat instead (browser handles speech recognition).")
+
+# Vosk is PREFERRED for Raspberry Pi (lightweight, offline)
+VOSK_AVAILABLE = False
+vosk_model = None
+try:
+    from vosk import Model as VoskModel, KaldiRecognizer
+    import wave
+    import json as json_module
+    # Try to load the model
+    vosk_model_path = Path("./vosk-model-small-en-us-0.15")
+    if vosk_model_path.exists():
+        vosk_model = VoskModel(str(vosk_model_path))
+        VOSK_AVAILABLE = True
+        print("✅ Vosk model loaded! (Offline STT ready)")
+    else:
+        print("⚠️  Vosk model not found. Download it with:")
+        print("   wget https://alphacephei.com/vosk/models/vosk-model-small-en-us-0.15.zip")
+        print("   unzip vosk-model-small-en-us-0.15.zip")
+except ImportError:
+    pass
+
+# Status messages
+if not VOSK_AVAILABLE and not WHISPER_AVAILABLE:
+    print("⚠️  No STT engine available. Install vosk or whisper.")
+    print("   For Pi: pip3 install --user vosk")
+elif VOSK_AVAILABLE:
+    print("🎤 Using Vosk for speech recognition (offline, fast)")
+elif WHISPER_AVAILABLE:
+    print("🎤 Using Whisper for speech recognition")
 
 app = Flask(__name__, static_folder='.')
 CORS(app)
@@ -53,9 +80,9 @@ GOOGLE_CLOUD_API_KEY = "AIzaSyBVgQFHn0U1Lya7J-UsxOW5ll4NgCl-WAU"
 VOICE_SAMPLES_DIR = Path("./voice_samples")
 VOICE_SAMPLES_DIR.mkdir(exist_ok=True)
 
-# Load Whisper model IF available
+# Load Whisper model IF available and Vosk is not
 whisper_model = None
-if WHISPER_AVAILABLE:
+if WHISPER_AVAILABLE and not VOSK_AVAILABLE:
     print("⏳ Loading Whisper model...")
     whisper_model = whisper.load_model("base")
     print("✅ Whisper model loaded!")
@@ -82,6 +109,64 @@ def cleanup_outputs():
                 f.unlink()
     except Exception as e:
         print(f"Cleanup error: {e}")
+
+
+def vosk_transcribe(audio_path):
+    """Transcribe audio using Vosk (offline, fast)."""
+    if not VOSK_AVAILABLE or not vosk_model:
+        return None, "unknown"
+    
+    try:
+        import subprocess
+        import wave
+        import json as json_module
+        
+        # Convert to WAV format that Vosk expects (16kHz, mono, 16-bit)
+        wav_path = audio_path.replace('.webm', '.wav').replace('.mp3', '.wav')
+        if not wav_path.endswith('.wav'):
+            wav_path = audio_path + '.wav'
+            
+        # Use ffmpeg to convert
+        subprocess.run([
+            'ffmpeg', '-y', '-i', audio_path,
+            '-ar', '16000', '-ac', '1', '-f', 'wav', wav_path
+        ], capture_output=True, timeout=30)
+        
+        # Open and transcribe
+        wf = wave.open(wav_path, 'rb')
+        
+        rec = KaldiRecognizer(vosk_model, wf.getframerate())
+        rec.SetWords(True)
+        
+        results = []
+        while True:
+            data = wf.readframes(4000)
+            if len(data) == 0:
+                break
+            if rec.AcceptWaveform(data):
+                result = json_module.loads(rec.Result())
+                if result.get('text'):
+                    results.append(result['text'])
+        
+        # Get final result
+        final_result = json_module.loads(rec.FinalResult())
+        if final_result.get('text'):
+            results.append(final_result['text'])
+        
+        wf.close()
+        
+        # Cleanup temp wav
+        try:
+            os.unlink(wav_path)
+        except:
+            pass
+        
+        full_text = ' '.join(results).strip()
+        return full_text, "en"  # Vosk small model is English-only
+        
+    except Exception as e:
+        print(f"Vosk transcription error: {e}")
+        return None, "unknown"
 
 # Keywords that trigger a web search
 SEARCH_TRIGGERS = [
@@ -907,7 +992,7 @@ def voice_chat():
         language = request.form.get('language', 'auto')
         voice = request.form.get('voice', 'en-US-AriaNeural')
         
-        # Step 1: STT
+        # Step 1: STT (Try Vosk first, then Whisper)
         stt_start = time.time()
         with tempfile.NamedTemporaryFile(suffix='.webm', delete=False) as tmp:
             audio_file.save(tmp.name)
@@ -917,17 +1002,27 @@ def voice_chat():
         detected_lang = "unknown"
         
         try:
-            options = {"verbose": False}
-            if language and language != 'auto':
-                options["language"] = language
+            # Try Vosk first (faster, offline)
+            if VOSK_AVAILABLE:
+                user_text, detected_lang = vosk_transcribe(tmp_path)
+                if user_text:
+                    print(f"🎤 Vosk heard: {user_text}")
             
-            stt_result = whisper_model.transcribe(tmp_path, **options)
-            user_text = stt_result['text'].strip()
-            detected_lang = stt_result.get('language', 'unknown')
+            # Fall back to Whisper if Vosk failed or unavailable
+            if not user_text and WHISPER_AVAILABLE and whisper_model:
+                options = {"verbose": False}
+                if language and language != 'auto':
+                    options["language"] = language
+                
+                stt_result = whisper_model.transcribe(tmp_path, **options)
+                user_text = stt_result['text'].strip()
+                detected_lang = stt_result.get('language', 'unknown')
+                print(f"🎤 Whisper heard: {user_text}")
+            
             latencies['stt'] = round((time.time() - stt_start) * 1000)
             
             if not user_text:
-                return jsonify({'error': 'No speech detected'}), 400
+                return jsonify({'error': 'No speech detected', 'stt_engine': 'vosk' if VOSK_AVAILABLE else 'whisper'}), 400
             
         finally:
             if os.path.exists(tmp_path):
