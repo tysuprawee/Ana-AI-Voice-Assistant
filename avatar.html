@@ -1029,25 +1029,34 @@
         let silenceStartTime = 0;
 
         // VAD Configuration
+        // VAD Configuration
         const VAD_CONFIG = {
             SPEECH_THRESHOLD: 15,      // Volume level to detect speech
-            SILENCE_THRESHOLD: 8,      // Volume level to detect silence
+            SILENCE_THRESHOLD: 12,     // Volume level to detect silence
             SPEECH_START_DELAY: 300,   // ms of speech before starting record
-            SILENCE_END_DELAY: 2000,   // ms of silence before stopping record
+            SILENCE_END_DELAY: 2500,   // 2.5s silence before stopping (Fixes "cut off too early")
             MIN_RECORDING_TIME: 800,   // Minimum recording duration (ms)
-            RESTART_DELAY_SUCCESS: 1500, // Delay after successful response
-            RESTART_DELAY_NO_SPEECH: 4000, // Delay after "no speech" error
-            RESTART_DELAY_ERROR: 5000     // Delay after error
+            RESTART_DELAY_SUCCESS: 500,
+            RESTART_DELAY_NO_SPEECH: 500,
+            RESTART_DELAY_ERROR: 5000,
+            INTERRUPT_THRESHOLD: 25    // Volume to interrupt Ana speaking (Barge-in)
         };
 
         // Start audio monitoring (for proactive mode)
         async function startMonitoring() {
             if (isMonitoring || isProcessing || isMuted) return;
             if (!settingsOverlay.classList.contains('hidden') || !passwordModal.classList.contains('hidden')) return;
-            if (avatar.classList.contains('speaking')) return;
+            // Removed check for 'speaking' to allow barge-in
 
             try {
-                audioStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                // Enable Echo Cancellation for Barge-in
+                audioStream = await navigator.mediaDevices.getUserMedia({
+                    audio: {
+                        echoCancellation: true,
+                        noiseSuppression: true,
+                        autoGainControl: true
+                    }
+                });
                 audioContext = new (window.AudioContext || window.webkitAudioContext)();
                 analyser = audioContext.createAnalyser();
                 const source = audioContext.createMediaStreamSource(audioStream);
@@ -1087,6 +1096,21 @@
             analyser.getByteFrequencyData(dataArray);
             const volume = dataArray.reduce((a, b) => a + b, 0) / dataArray.length;
             const now = Date.now();
+
+            // --- BARGE-IN CHECK ---
+            if (avatar.classList.contains('speaking')) {
+                if (volume > VAD_CONFIG.INTERRUPT_THRESHOLD) {
+                    console.log('🛑 Voice Interruption Detected!');
+                    audioPlayer.pause();
+                    audioPlayer.currentTime = 0;
+                    setState('idle'); // Briefly idle then VAD picks up
+                    // No return, let it fall through to isRecording logic
+                } else {
+                    // If speaking and quiet, just loop
+                    requestAnimationFrame(monitorAudio);
+                    return;
+                }
+            }
 
             if (!isRecording) {
                 // Waiting for speech to start
