@@ -1,0 +1,30 @@
+# Environment files with secrets
+.env
+.env.local
+.env.*.local
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Audio outputs (generated)
+outputs/*.mp3
+
+# Voice samples (user data)
+voice_samples/*.wav
+voice_samples/*.mp3
+voice_samples/*.webm
+voice_samples/*.m4a
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
