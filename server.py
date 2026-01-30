@@ -62,21 +62,22 @@ elif WHISPER_AVAILABLE:
 app = Flask(__name__, static_folder='.')
 CORS(app)
 
-# Gemini API Key
-GEMINI_API_KEY = "AIzaSyBFUEN4Md2lGc97CzlW0deS7jt-ftdw5l0"
-
-# Tavily API Key (for real-time search)
-TAVILY_API_KEY = "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"
-
-# Fish Audio API Key (for voice cloning)
-FISH_AUDIO_API_KEY = "2c97ce52e63e43ddb7beb5a0c61564d3"
+# API Keys - Load from environment variables for security
+GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "")
+TAVILY_API_KEY = os.environ.get("TAVILY_API_KEY", "")
+FISH_AUDIO_API_KEY = os.environ.get("FISH_AUDIO_API_KEY", "")
+GOOGLE_CLOUD_API_KEY = os.environ.get("GOOGLE_CLOUD_API_KEY", "")
 FISH_AUDIO_BASE_URL = "https://api.fish.audio"
 
 # Initialize clients
-gemini_client = genai.Client(api_key=GEMINI_API_KEY)
-tavily_client = TavilyClient(api_key=TAVILY_API_KEY)
+gemini_client = genai.Client(api_key=GEMINI_API_KEY) if GEMINI_API_KEY else None
+tavily_client = TavilyClient(api_key=TAVILY_API_KEY) if TAVILY_API_KEY else None
 
-GOOGLE_CLOUD_API_KEY = "AIzaSyBVgQFHn0U1Lya7J-UsxOW5ll4NgCl-WAU"
+# Warn if API keys are missing
+if not GEMINI_API_KEY:
+    print("⚠️  GEMINI_API_KEY not set. AI chat will not work.")
+if not TAVILY_API_KEY:
+    print("⚠️  TAVILY_API_KEY not set. Web search will not work.")
 
 # Voice samples directory
 VOICE_SAMPLES_DIR = Path("./voice_samples")
